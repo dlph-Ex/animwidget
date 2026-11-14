@@ -875,10 +875,12 @@ public final class ThemeManager {
                             } else if (Intrinsics.areEqual("band", ((ViewGroup) view).getTag())) {
                                 // v1.10.392：主页「新建组件」色带。**半径 0**（直角）——
                                 // 这是整页唯一的高饱和面积，圆角会立刻把它变回一枚「大胶囊按钮」，
-                                // 版式又退回上一版。色带整幅铺 primary，字用 on_primary。
+                                // 版式又退回上一版。
+                                // v1.10.521：填充从「整幅 primary」改成与开发者页名片同一套渐变
+                                // （TL_BR，primary 92% → secondary 86%），参数只有一处：heroFill()。
                                 Context context = ((ViewGroup) view).getContext();
                                 Intrinsics.checkNotNullExpressionValue(context, "getContext(...)");
-                                ((ViewGroup) view).setBackground(rounded(context, c.getPrimary(), 0.0f));
+                                ((ViewGroup) view).setBackground(heroFill(context, 0.0f));
                             }
                         }
                         int childCount = ((ViewGroup) view).getChildCount();
@@ -1218,5 +1220,23 @@ public final class ThemeManager {
     public final int withAlpha(int color, float alpha) {
         int a = RangesKt.coerceIn((int) (Color.alpha(color) * alpha), 0, 255);
         return Color.argb(a, Color.red(color), Color.green(color), Color.blue(color));
+    }
+
+    /**
+     * 高饱和渐变：开发者页「创作者名片」与主页「新建组件」色带共用这一套参数。
+     *
+     * <p>左上 → 右下（{@link GradientDrawable.Orientation#TL_BR}），
+     * primary 92% → secondary 86%（透明度沿用名片那张卡的取值）。
+     * 圆角由调用方给：名片 24dp；主页色带 0（直角，它是整页唯一的高饱和面积，
+     * 加圆角会立刻变回「大胶囊按钮」）。</p>
+     */
+    @NotNull
+    public final GradientDrawable heroFill(@NotNull Context context, float radiusDp) {
+        Intrinsics.checkNotNullParameter(context, "context");
+        ThemeColors c = colors(context);
+        GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
+                new int[]{withAlpha(c.getPrimary(), 0.92f), withAlpha(c.getSecondary(), 0.86f)});
+        gd.setCornerRadius(radiusDp * context.getResources().getDisplayMetrics().density);
+        return gd;
     }
 }

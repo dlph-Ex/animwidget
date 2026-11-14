@@ -280,10 +280,8 @@ public final class DeveloperActivity extends I18nActivity {
         }
         ThemeColors c = ThemeManager.INSTANCE.colors(this);
         float dp = getResources().getDisplayMetrics().density;
-        GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{withAlpha(c.getPrimary(), 0.92f), withAlpha(c.getSecondary(), 0.86f)});
-        gd.setCornerRadius(24.0f * dp);
-        hero.setBackground(gd);
+        // v1.10.521：渐变参数统一到 ThemeManager.heroFill()，与主页「新建组件」色带同一套。
+        hero.setBackground(ThemeManager.INSTANCE.heroFill(this, 24.0f));
         TextView avatar = (TextView) findViewById(R.id.dev_avatar);
         if (avatar != null) {
             GradientDrawable circle = new GradientDrawable();
