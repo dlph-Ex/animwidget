@@ -56,7 +56,7 @@
 | `POST_NOTIFICATIONS` | 播放状态通知 | 是 |
 | `SYSTEM_ALERT_WINDOW` | 仅「显示并调整位置」用的悬浮层 | 是 |
 | `PACKAGE_USAGE_STATS` | 判断桌面是否在前台，切走就停播 | 是 |
-| `READ_MEDIA_IMAGES`<br>`READ_EXTERNAL_STORAGE`（仅 API ≤ 32） | 选择与预览素材 | 是 |
+| `READ_MEDIA_IMAGES`（Android 13+）<br>`READ_EXTERNAL_STORAGE`（仅 API ≤ 32） | 选择与预览素材 | 是 |
 | `INTERNET` | 只在「关于」页点版本行时，向 GitHub Releases API 请求一次 | 普通权限 |
 | Shizuku（`moe.shizuku.manager.permission.API_V23`） | 仅「后台优化」在本地执行 shell 命令；不装 Shizuku 就完全用不到 | 是 |
 
@@ -68,7 +68,7 @@
 - **桌面不报尺寸**：启动器不报 `OPTION_APPWIDGET_SIZES` 时，按估算值出图。
 - **帧率上限**：逐帧推帧要经过启动器渲染，多个高帧率组件同时播放时，实际帧率可能低于设定值。
 - **后台限制**：部分 ROM 会限制后台服务，可用「后台优化（Shizuku）」或电池白名单改善。
-- **素材上限**：单段素材最长 40 秒，超出截取前 40 秒；单组件最多 2400 帧，超过时按上限下调帧率（源帧率很高的动图会遇到，普通视频不会）。
+- **素材上限**：视频最长 40 秒（超出截取前 40 秒）；动图不截时长，但单组件最多 2400 帧，长动图会按 2400 帧反算帧率（帧率随之降低）。
 - **重签会被限制**：发行包会校验自身签名，用别的证书重签后，推帧与导出会停止。
 
 ### 技术要点
@@ -174,7 +174,7 @@ Upgrades are plain installs over the old version; widget configs and media stay 
 | `POST_NOTIFICATIONS` | playback status notification | Yes |
 | `SYSTEM_ALERT_WINDOW` | overlay used only by "show and adjust position" | Yes |
 | `PACKAGE_USAGE_STATS` | detect whether the launcher is in front, to pause when hidden | Yes |
-| `READ_MEDIA_IMAGES`<br>`READ_EXTERNAL_STORAGE` (API 32 and below) | pick and preview media | Yes |
+| `READ_MEDIA_IMAGES` (Android 13+)<br>`READ_EXTERNAL_STORAGE` (API 32 and below only) | pick and preview media | Yes |
 | `INTERNET` | one GitHub Releases API request, only when the version row in About is tapped | normal permission |
 | Shizuku (`moe.shizuku.manager.permission.API_V23`) | shell commands run locally by "background optimization"; unused unless Shizuku is installed | Yes |
 
@@ -186,7 +186,7 @@ No analytics SDK, no ads, nothing uploaded. Frames live as WebP in the app's pri
 - **Launchers without size reports**: when a launcher does not report `OPTION_APPWIDGET_SIZES`, the render uses an estimate.
 - **Frame-rate ceiling**: frames are pushed through the launcher's rendering, so several high-frame-rate widgets together can end up below the configured rate.
 - **Background limits**: some ROMs throttle background services; "background optimization (Shizuku)" or the battery whitelist helps.
-- **Media limits**: a clip may last 40 seconds (the first 40 s are used); a widget is capped at 2400 frames, and the frame rate is lowered when that cap would be exceeded (high-frame-rate source animations hit it; ordinary video does not).
+- **Media limits**: video may last 40 seconds (the first 40 s are used); animations are not truncated, but a widget is capped at 2400 frames, and long animations have their frame rate recalculated from that 2400-frame budget.
 - **Re-signed builds are limited**: the release build verifies its own signature; a build re-signed with another certificate stops pushing frames and exporting.
 
 ### How it works
