@@ -68,7 +68,7 @@
 - **桌面不报尺寸**：启动器不报 `OPTION_APPWIDGET_SIZES` 时，按估算值出图。
 - **帧率上限**：逐帧推帧要经过启动器渲染，多个高帧率组件同时播放时，实际帧率可能低于设定值。
 - **后台限制**：部分 ROM 会限制后台服务，可用「后台优化（Shizuku）」或电池白名单改善。
-- **素材上限**：单段素材最长 40 秒，超出截取前 40 秒；单组件帧数上限 2400，设定帧率算出的帧数超过 2400 时会自动下调帧率。
+- **素材上限**：单段素材最长 40 秒，超出截取前 40 秒；单组件最多 2400 帧，超过时按上限下调帧率（源帧率很高的动图会遇到，普通视频不会）。
 - **重签会被限制**：发行包会校验自身签名，用别的证书重签后，推帧与导出会停止。
 
 ### 技术要点
@@ -91,7 +91,7 @@
 
 - 需要 JDK 17、`aapt2` 与 Python 3。
 - 工具链 jar（`android-all.jar`、`jdk-core-stubs.jar`、`r8.jar`、`apksig.jar`、`signapk-cli.jar`、`kotlin-stdlib.jar`、`annotations-13.0.jar`、`shizuku-all.jar`、`shizuku-aidl.jar`、`core-lambda-stubs.jar`）放在 `toolchain/`，不随仓库分发；可用 `TOOLCHAIN=/path` 指定。
-- 签名钥匙放在 `build-manual/debug.keystore`（别名 `androiddebugkey`，口令 `android`），不随仓库分发，自己生成即可。
+- 签名钥匙放在 `build-manual/debug.keystore`（别名 `androiddebugkey`），不随仓库分发，自己生成即可；keystore 与密钥口令写在脚本 `SignApk sign` 那一行，换成自己的钥匙时同步改脚本。
 - 加 `OBFUSCATE=1` 可改走 R8 混淆（只改名，不裁剪、不优化）。
 - 根目录的 Gradle 文件只供 IDE 打开工程，出包不用它们。
 - 内置双语字体不随仓库分发：`patch-v1.4.0/res/font/anim_dual*` 缺失时也能出包，界面回退系统字体；想还原原字形就把这三个文件放回 `res/font/`。
@@ -186,7 +186,7 @@ No analytics SDK, no ads, nothing uploaded. Frames live as WebP in the app's pri
 - **Launchers without size reports**: when a launcher does not report `OPTION_APPWIDGET_SIZES`, the render uses an estimate.
 - **Frame-rate ceiling**: frames are pushed through the launcher's rendering, so several high-frame-rate widgets together can end up below the configured rate.
 - **Background limits**: some ROMs throttle background services; "background optimization (Shizuku)" or the battery whitelist helps.
-- **Media limits**: a clip may last 40 seconds (the first 40 s are used); a widget is capped at 2400 frames, and the frame rate is lowered automatically when the configured rate would exceed that.
+- **Media limits**: a clip may last 40 seconds (the first 40 s are used); a widget is capped at 2400 frames, and the frame rate is lowered when that cap would be exceeded (high-frame-rate source animations hit it; ordinary video does not).
 - **Re-signed builds are limited**: the release build verifies its own signature; a build re-signed with another certificate stops pushing frames and exporting.
 
 ### How it works
@@ -209,7 +209,7 @@ Output: `dist/AnimWidget-v1.10.521.apk`.
 
 - Needs JDK 17, `aapt2` and Python 3.
 - Toolchain jars (`android-all.jar`, `jdk-core-stubs.jar`, `r8.jar`, `apksig.jar`, `signapk-cli.jar`, `kotlin-stdlib.jar`, `annotations-13.0.jar`, `shizuku-all.jar`, `shizuku-aidl.jar`, `core-lambda-stubs.jar`) live in `toolchain/` and are not shipped; override with `TOOLCHAIN=/path`.
-- The signing key belongs in `build-manual/debug.keystore` (alias `androiddebugkey`, password `android`); it is not shipped — generate your own.
+- The signing key belongs in `build-manual/debug.keystore` (alias `androiddebugkey`); it is not shipped — generate your own. The keystore and key passwords are the arguments on the `SignApk sign` line in the build script; edit that line if you bring your own key.
 - Prefix with `OBFUSCATE=1` to build through R8 (renaming only, no shrinking or optimising).
 - The Gradle files at the root only serve IDE import; the build does not use them.
 - The built-in bilingual font is not shipped: without `patch-v1.4.0/res/font/anim_dual*` the build still works and the UI falls back to the system font; drop those three files back into `res/font/` to get the original glyphs.
