@@ -8,7 +8,17 @@
 
 ## 中文
 
-[功能](#功能) · [下载](#下载) · [安装](#安装) · [权限](#权限) · [已知限制](#已知限制) · [技术要点](#技术要点) · [构建](#构建) · [仓库结构](#仓库结构) · [反馈](#反馈) · [赞赏](#赞赏) · [许可证](#许可证)
+[界面](#界面) · [功能](#功能) · [下载](#下载) · [安装](#安装) · [权限](#权限) · [已知限制](#已知限制) · [技术要点](#技术要点) · [构建](#构建) · [仓库结构](#仓库结构) · [反馈](#反馈) · [赞赏](#赞赏) · [许可证](#许可证)
+
+### 界面
+
+<table>
+<tr>
+<td align="center"><img src="images/app-main.jpg" width="290" alt="主页：组件清单与新建组件色带"><br><sub>主页</sub></td>
+<td align="center"><img src="images/app-developer.jpg" width="290" alt="开发者页：名片与调试入口"><br><sub>开发者页</sub></td>
+</tr>
+</table>
+
 
 ### 功能
 
@@ -126,7 +136,17 @@ MIT。Copyright (c) 2026 AnimWidget contributors。全文见 [LICENSE](LICENSE)�
 
 ## English
 
-[Features](#features) · [Download](#download) · [Install](#install) · [Permissions](#permissions) · [Known limitations](#known-limitations) · [How it works](#how-it-works) · [Build](#build) · [Repository layout](#repository-layout) · [Feedback](#feedback) · [Sponsor](#sponsor) · [License](#license)
+[Screenshots](#screenshots) · [Features](#features) · [Download](#download) · [Install](#install) · [Permissions](#permissions) · [Known limitations](#known-limitations) · [How it works](#how-it-works) · [Build](#build) · [Repository layout](#repository-layout) · [Feedback](#feedback) · [Sponsor](#sponsor) · [License](#license)
+
+### Screenshots
+
+<table>
+<tr>
+<td align="center"><img src="images/app-main.jpg" width="290" alt="Home screen: widget list and the New widget band"><br><sub>Home</sub></td>
+<td align="center"><img src="images/app-developer.jpg" width="290" alt="Developer page: creator card and debug entries"><br><sub>Developer page</sub></td>
+</tr>
+</table>
+
 
 ### Features
 
