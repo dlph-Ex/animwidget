@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- v1.10.108：「原始比例」模式专用 —— fitCenter 完整显示，不再被组件格子裁掉。
+     其它布局模式（填充 / 16:9 / 4:3 …）仍用 widget_media 的 centerCrop 铺满。 -->
+<FrameLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/widget_image" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/widget_desc" />
+</FrameLayout>

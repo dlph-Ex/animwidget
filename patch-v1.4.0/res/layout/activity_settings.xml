@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ScrollView android:id="@id/root_settings" android:layout_width="fill_parent" android:layout_height="fill_parent" android:fillViewport="true" android:overScrollMode="always">
+        <LinearLayout android:orientation="vertical" android:paddingTop="52.0dip" android:paddingBottom="0.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="26.0sp" android:textStyle="bold" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_title" android:layout_weight="1.0" />
+                <Button android:id="@id/btn_dev_info" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="wrap_content" android:layout_height="42.0dip" android:text="@string/settings_dev" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/row_language_header" android:padding="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <io.github.animwidget.IconTileView android:id="@id/img_language" android:tag="icon_tile|lang" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_language" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="12.0dip">
+                        <TextView android:textSize="15.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_language" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/settings_language_hint" />
+                    </LinearLayout>
+                    <io.github.animwidget.GlyphView android:id="@id/btn_language_toggle" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_language" />
+                </LinearLayout>
+                <LinearLayout android:orientation="vertical" android:id="@+id/rg_language" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="4.0dip" android:paddingEnd="4.0dip">
+                    <io.github.animwidget.LanguageRowView android:id="@+id/rb_lang_system" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+                    <io.github.animwidget.LanguageRowView android:id="@+id/rb_lang_zh" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" />
+                    <io.github.animwidget.LanguageRowView android:id="@+id/rb_lang_en" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <!-- v1.10.320（用户："请你对准"）：模式卡原来只写了上下 10dp，横向为 0 ——
+                     于是 header 里的图标比语言卡左移了 10dp、胶囊也宽 20dp（319 只补了胶囊那一半）。
+                     现在这张卡与语言卡**同一份 padding=10dp**，下面容器回到 4dp，两条链路逐项相等：
+                       图标距卡片边 = 10 + 6 = 16dp      （语言卡同）
+                       胶囊距卡片边 = 10 + 4 = 14dp      （语言卡同） -->
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/row_mode_header" android:padding="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:clickable="true">
+                    <io.github.animwidget.IconTileView android:tag="icon_tile_3|mode" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_system_mode" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="12.0dip">
+                        <TextView android:textSize="15.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_system_mode" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:id="@+id/tv_mode_value" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/settings_follow_system" />
+                    </LinearLayout>
+                    <io.github.animwidget.GlyphView android:id="@+id/btn_mode_toggle" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_system_mode" />
+                </LinearLayout>
+                <!-- v1.10.317（用户："将系统模式的选择页面改为界面语言一样的"）：
+                     三行自绘卡片（标题 + 副行 + 勾），与「界面语言」完全同一套 LanguageRowView；
+                     选中态由 refreshModeRows() 按存储值刷，不再依赖 RadioGroup.check()。 -->
+                <!-- v1.10.319（用户："选中条目宽度不对，请调整为分毫不差"）：
+                     语言卡的选中胶囊 = 卡片 padding 10dp + 容器 4dp = 距卡片边 14dp。
+                     模式卡本身**没有横向 padding**（只有上下 10dp），所以这里的容器必须自己补 14dp，
+                     否则胶囊会顶着卡片边走 —— 上一版我砍成 4dp 就是算错了这一项。
+                     paddingTop 也不加（语言卡容器没有），两处都对齐后胶囊宽度逐像素一致。 -->
+                <LinearLayout android:orientation="vertical" android:id="@id/rg_mode" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="4.0dip" android:paddingEnd="4.0dip">
+                    <io.github.animwidget.LanguageRowView android:id="@id/rb_system" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+                    <io.github.animwidget.LanguageRowView android:id="@id/rb_light" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" />
+                    <io.github.animwidget.LanguageRowView android:id="@id/rb_dark" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" />
+                </LinearLayout>
+            </LinearLayout>
+            <!-- v1.10.98（需求 4）：字体卡 —— 折叠动画与上面「界面语言」「系统模式」完全同一套 -->
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/row_font_header" android:padding="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:clickable="true">
+                    <TextView android:textSize="14.0sp" android:textStyle="bold" android:gravity="center" android:tag="icon_tile" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="Aa" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="12.0dip">
+                        <TextView android:textSize="15.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_font" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:id="@+id/tv_font_value" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/settings_font_system" />
+                    </LinearLayout>
+                    <io.github.animwidget.GlyphView android:id="@+id/btn_font_toggle" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_font" />
+                </LinearLayout>
+                <LinearLayout android:orientation="vertical" android:id="@+id/ll_fonts" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingTop="2.0dip" android:paddingBottom="2.0dip" />
+            </LinearLayout>
+            <!-- v1.10.139（需求）：性能卡 —— 放在字体项下方，折叠方式与上方各卡完全同一套（animateExpand + 箭头 180°） -->
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/row_perf_header" android:padding="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:clickable="true">
+                    <io.github.animwidget.IconTileView android:tag="icon_tile_3|perf" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_perf" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="12.0dip">
+                        <TextView android:textSize="15.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_perf" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:id="@+id/tv_perf_value" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/settings_perf_hint" />
+                    </LinearLayout>
+                    <io.github.animwidget.GlyphView android:id="@+id/btn_perf_toggle" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_perf" />
+                </LinearLayout>
+                <LinearLayout android:orientation="vertical" android:id="@+id/ll_perf" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingTop="2.0dip" android:paddingBottom="2.0dip" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:paddingTop="10.0dip" android:paddingBottom="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/row_palette_header" android:paddingTop="6.0dip" android:paddingBottom="6.0dip" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:clickable="true">
+                    <TextView android:textSize="17.0sp" android:gravity="center" android:tag="icon_tile_2" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="🎨" />
+                    <TextView android:textSize="15.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_presets" android:layout_weight="1.0" android:layout_marginStart="12.0dip" />
+                    <io.github.animwidget.GlyphView android:id="@+id/btn_palette_toggle" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_presets" />
+                </LinearLayout>
+                <!-- v1.10.179（反馈）：整张卡可折叠 —— 与「界面语言 / 系统模式 / 字体 / 性能」同一套 animateExpand + 箭头 180° -->
+                <LinearLayout android:orientation="vertical" android:id="@+id/ll_palette_body" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <!-- v1.10.388（需求）：「系统预设」小标题（三色块符号 + 11sp 弱化文字，不与四字主标题抢）
+                          + 预设行改成**可横向滑动**（不加指示线），滑到两端可被拉伸（overScrollMode=always） -->
+                    <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="6.0dip">
+                        <io.github.animwidget.GlyphView android:id="@+id/glyph_presets" android:layout_width="14.0dip" android:layout_height="14.0dip" android:contentDescription="@string/settings_presets_system" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6.0dip" android:text="@string/settings_presets_system" />
+                    </LinearLayout>
+                    <HorizontalScrollView android:id="@+id/presets_scroll" android:scrollbars="none" android:overScrollMode="always" android:clipToPadding="false" android:paddingStart="10.0dip" android:paddingEnd="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip">
+                        <LinearLayout android:orientation="horizontal" android:id="@id/ll_presets" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </HorizontalScrollView>
+                    <View android:tag="divider_soft" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginTop="10.0dip" android:layout_marginStart="14.0dip" android:layout_marginEnd="14.0dip" />
+                    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/row_schemes_header" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingTop="8.0dip" android:paddingStart="14.0dip" android:paddingEnd="8.0dip">
+                        <TextView android:textSize="14.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_scheme_title" android:layout_weight="1.0" />
+                        <io.github.animwidget.GlyphView android:id="@+id/btn_schemes_toggle" android:visibility="gone" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_scheme_title" />
+                    </LinearLayout>
+                    <LinearLayout android:orientation="vertical" android:id="@+id/ll_schemes" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:paddingStart="8.0dip" android:paddingEnd="8.0dip" />
+                    <TextView android:textSize="11.0sp" android:tag="muted" android:id="@+id/tv_schemes_hint" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="6.0dip" android:text="@string/settings_scheme_hint" android:paddingStart="14.0dip" android:paddingEnd="14.0dip" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <TextView android:textSize="18.0sp" android:gravity="center" android:tag="icon_tile" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="⇄" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="12.0dip">
+                        <TextView android:textSize="15.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_invert" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/settings_invert_hint" />
+                    </LinearLayout>
+                    <android.widget.Switch android:id="@id/cb_invert" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+                <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="14.0dip" android:layout_marginEnd="14.0dip" />
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingTop="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <TextView android:textSize="18.0sp" android:gravity="center" android:tag="icon_tile_3" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="◐" />
+                    <TextView android:textSize="15.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_contrast_label" android:layout_weight="1.0" android:layout_marginStart="12.0dip" />
+                    <TextView android:textSize="12.0sp" android:gravity="center" android:id="@id/tv_contrast" android:tag="chip_value" android:background="@drawable/pill_soft" android:paddingTop="5.0dip" android:paddingBottom="5.0dip" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="64.0dip" android:text="0.00" android:paddingStart="10.0dip" android:paddingEnd="10.0dip" android:clickable="true" />
+                </LinearLayout>
+                <SeekBar android:id="@id/seek_contrast" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="200" android:progress="100" android:layout_marginStart="8.0dip" android:layout_marginEnd="8.0dip" />
+                <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="20.0dip" android:paddingEnd="20.0dip" android:paddingBottom="8.0dip">
+                    <TextView android:textSize="10.0sp" android:tag="muted" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="wrap_content" android:gravity="start" android:text="@string/settings_contrast_tick_min" />
+                    <TextView android:textSize="10.0sp" android:tag="muted" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="wrap_content" android:gravity="center" android:text="@string/settings_contrast_tick_zero" />
+                    <TextView android:textSize="10.0sp" android:tag="muted" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="wrap_content" android:gravity="end" android:text="@string/settings_contrast_tick_max" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:paddingTop="6.0dip" android:paddingBottom="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <TextView android:textSize="14.0sp" android:paddingTop="8.0dip" android:paddingBottom="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_colors" android:paddingStart="14.0dip" android:paddingEnd="14.0dip" />
+                <LinearLayout android:orientation="vertical" android:id="@id/ll_colors" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+                <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="14.0dip" android:layout_marginEnd="14.0dip" />
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/row_shape_system" android:paddingTop="7.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <CheckBox android:gravity="center_vertical" android:id="@id/cb_shape_system" android:layout_width="40.0dip" android:layout_height="40.0dip" />
+                    <TextView android:textSize="14.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_shape_follow" android:layout_weight="1.0" android:layout_marginStart="8.0dip" />
+                </LinearLayout>
+                <TextView android:textSize="11.0sp" android:tag="muted" android:paddingBottom="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_shape_hint" android:paddingStart="62.0dip" android:paddingEnd="14.0dip" />
+            </LinearLayout>
+            <Button android:textSize="13.0sp" android:id="@id/btn_logs_entry" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="46.0dip" android:layout_marginTop="16.0dip" android:text="@string/settings_logs" android:textAllCaps="false" />
+            <Button android:textSize="14.0sp" android:id="@id/btn_reset_theme" android:tag="danger" android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="50.0dip" android:layout_marginTop="16.0dip" android:layout_marginBottom="6.0dip" android:text="@string/settings_reset" android:textAllCaps="false" />
+            <View android:id="@+id/spacer_bottom" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="104.0dip" />
+        </LinearLayout>
+    </ScrollView>
+    <TextView android:textSize="13.0sp" android:gravity="center" android:layout_gravity="start|center|top" android:id="@id/btn_settings_close" android:tag="close_pill" android:background="@drawable/pill_soft" android:focusable="true" android:clickable="true" android:layout_width="wrap_content" android:layout_height="38.0dip" android:layout_marginTop="8.0dip" android:text="@string/settings_close" android:contentDescription="@string/settings_close" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:layout_marginStart="16.0dip" android:elevation="4.0dip" />
+    <LinearLayout android:orientation="vertical" android:layout_gravity="bottom" android:id="@+id/scheme_action_bar" android:visibility="gone" android:background="@drawable/card_surface" android:elevation="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="12.0dip" android:paddingEnd="12.0dip" android:paddingTop="12.0dip" android:paddingBottom="10.0dip" android:layout_marginStart="12.0dip" android:layout_marginEnd="12.0dip" android:layout_marginBottom="14.0dip">
+        <!-- v1.10.372（需求）：胶囊按钮区 = **两页连续滚动**（不是分页控件）。
+             第 1 页：删除 / 更新(确认) / 取消 —— 缺哪个就少哪个，剩下的按权重铺满，不留空缺；
+             第 2 页：前移 / 后移（都不适用时整页隐藏，第 1 页铺满）。
+             两页宽度在代码里按滚动视口宽度设置（layoutPages），所以页与页之间是**无缝**的连续滑动。 -->
+        <HorizontalScrollView android:id="@+id/scheme_bar_scroll" android:scrollbars="none" android:overScrollMode="always" android:clipToPadding="false" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:id="@+id/scheme_bar_row" android:layout_width="wrap_content" android:layout_height="wrap_content">
+                <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:id="@+id/scheme_bar_page1" android:layout_width="wrap_content" android:layout_height="wrap_content">
+                    <Button android:textSize="14.0sp" android:id="@+id/btn_scheme_delete" android:tag="danger" android:background="@drawable/pill_primary" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="48.0dip" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:layout_marginEnd="8.0dip" android:text="@string/settings_scheme_delete" android:textAllCaps="false" android:visibility="gone" />
+                    <Button android:textSize="14.0sp" android:id="@+id/btn_scheme_confirm" android:tag="primary" android:background="@drawable/pill_primary" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="48.0dip" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:layout_marginEnd="8.0dip" android:text="@string/settings_scheme_confirm" android:textAllCaps="false" />
+                    <Button android:textSize="14.0sp" android:id="@+id/btn_scheme_cancel" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="48.0dip" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:layout_marginEnd="8.0dip" android:text="@string/cancel" android:textAllCaps="false" />
+                </LinearLayout>
+                <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:id="@+id/scheme_bar_page2" android:layout_width="wrap_content" android:layout_height="wrap_content">
+                    <Button android:textSize="14.0sp" android:id="@+id/btn_scheme_move_prev" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="48.0dip" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:layout_marginEnd="8.0dip" android:text="@string/settings_scheme_move_prev" android:textAllCaps="false" android:visibility="gone" />
+                    <Button android:textSize="14.0sp" android:id="@+id/btn_scheme_move_next" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="48.0dip" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:text="@string/settings_scheme_move_next" android:textAllCaps="false" android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
+        <FrameLayout android:id="@+id/scheme_bar_track" android:layout_width="fill_parent" android:layout_height="3.0dip" android:layout_marginTop="10.0dip">
+            <View android:id="@+id/scheme_bar_indicator" android:layout_width="fill_parent" android:layout_height="3.0dip" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:id="@id/preview_frame" android:background="@drawable/desk_bg" android:clipChildren="true" android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="1.0">
+        <!-- v1.10.519：壁纸底图不再是 ImageView + centerCrop。那个写法以**预览控件自己**（1260×738）为框，
+             壁纸在位图里垂直居中裁剪 → 整块被上移 (bh-738)/2 像素（实测 Δy=+839）。
+             现在改成按「整块显示区」对位的自绘 View，摆法是纯数学（WallpaperPlacement，门禁 [34] 脱机对拍）。 -->
+        <io.github.animwidget.WallpaperBackdropView android:id="@id/img_desk" android:layout_width="fill_parent" android:layout_height="fill_parent" android:contentDescription="@string/cfg_preview" />
+        <FrameLayout android:id="@id/preview_area" android:layout_width="fill_parent" android:layout_height="fill_parent">
+            <FrameLayout android:layout_gravity="center" android:id="@id/preview_box" android:layout_width="220.0dip" android:layout_height="140.0dip" android:foreground="@drawable/preview_outline">
+                <TextView android:textSize="12.0sp" android:textColor="#66707a9a" android:layout_gravity="center" android:id="@id/tv_preview_empty" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/section_preview" />
+                <ImageView android:id="@id/img_preview" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/cfg_preview" />
+            </FrameLayout>
+            <io.github.animwidget.SpinRingView android:layout_gravity="center" android:id="@id/pb_preview" android:visibility="gone" android:layout_width="56.0dip" android:layout_height="56.0dip" />
+            <TextView android:textSize="13.0sp" android:gravity="center" android:layout_gravity="bottom|center" android:id="@id/tv_parse_hint" android:background="@drawable/pill_primary" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="10.0dip" android:paddingTop="5.0dip" android:paddingBottom="5.0dip" android:paddingStart="12.0dip" android:paddingEnd="12.0dip" />
+        </FrameLayout>
+    </FrameLayout>
+    <!-- v1.10.496：v1.10.495 那行「剩余性能」原本插在这里（预览区与标签栏之间），
+         它把预览 FrameLayout 的 weight=1 高度挤掉了一行 —— 用户要求「背景可视空间保持在上一版」，
+         所以整行删掉、挪进下面的 ScrollView（见 ll_perf_headroom）。这一格恢复成 494 的样子。 -->
+    <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="48.0dip" android:paddingStart="24.0dip" android:paddingEnd="24.0dip">
+        <TextView android:textSize="16.0sp" android:gravity="center" android:id="@id/tab_content" android:layout_width="0.0dip" android:layout_height="fill_parent" android:text="@string/tab_content" android:layout_weight="1.0" />
+        <TextView android:textSize="16.0sp" android:gravity="center" android:id="@id/tab_appearance" android:layout_width="0.0dip" android:layout_height="fill_parent" android:text="@string/section_look" android:layout_weight="1.0" />
+    </LinearLayout>
+    <View android:layout_gravity="start" android:id="@id/tab_indicator" android:background="#ff4f46e5" android:layout_width="120.0dip" android:layout_height="3.0dip" android:layout_marginStart="24.0dip" />
+    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginTop="1.0dip" />
+    <ScrollView android:clipToPadding="false" android:layout_width="fill_parent" android:layout_height="0.0dip" android:fillViewport="true" android:layout_weight="1.0" android:overScrollMode="never">
+        <LinearLayout android:orientation="vertical" android:paddingTop="4.0dip" android:paddingBottom="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+            <!-- v1.10.496：剩余性能空间 —— 用户要求挪到「布局 / 素材」上方，并且不许做成一行纯文本。
+                 位置：ScrollView 的第一个孩子（ll_content 之前、ll_appearance 之前），所以「内容」页在
+                 「素材」上方、「外观」页在「布局」上方，切 tab 都在同一处，不会被滚走之前先被吃掉一半屏。
+                 排版：标题 + 大号百分比 / 分段余量表（PerfMeterView，自绘）/ 两枚数值胶囊 / 一行结论。
+                 配色不与 XML 写死：卡片走 tag="card"、标题走 tag="section"、胶囊走 tag="chip_value"、
+                 结论行走 tag="muted"，百分比与量表由 PerfBudget 每次刷新时按 ThemeColors 现下发。 -->
+            <LinearLayout android:orientation="vertical" android:id="@+id/ll_perf_headroom" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip" android:paddingStart="14.0dip" android:paddingEnd="14.0dip" android:paddingTop="12.0dip" android:paddingBottom="12.0dip">
+                <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:maxLines="1" android:letterSpacing="0.06" android:text="@string/perf_title" />
+                    <TextView android:textSize="19.0sp" android:textStyle="bold" android:includeFontPadding="false" android:id="@+id/tv_perf_pct" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perf_pct_loading" />
+                </LinearLayout>
+                <io.github.animwidget.PerfMeterView android:id="@+id/perf_meter" android:layout_width="fill_parent" android:layout_height="10.0dip" android:layout_marginTop="9.0dip" />
+                <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="9.0dip">
+                    <TextView android:textSize="11.0sp" android:tag="chip_value" android:maxLines="1" android:paddingTop="3.0dip" android:paddingBottom="3.0dip" android:paddingStart="9.0dip" android:paddingEnd="9.0dip" android:id="@+id/tv_perf_used" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perf_chip_na" />
+                    <TextView android:textSize="11.0sp" android:tag="chip_value" android:maxLines="1" android:paddingTop="3.0dip" android:paddingBottom="3.0dip" android:paddingStart="9.0dip" android:paddingEnd="9.0dip" android:layout_marginStart="6.0dip" android:id="@+id/tv_perf_lanes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perf_chip_na" />
+                </LinearLayout>
+                <TextView android:textSize="11.0sp" android:id="@+id/tv_perf_headroom" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip" android:maxLines="2" android:ellipsize="end" android:text="@string/perf_headroom_loading" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:id="@id/ll_content" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_source" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <io.github.animwidget.MediaSelectorView android:id="@id/media_selector" android:layout_width="fill_parent" android:layout_height="52.0dip" android:layout_margin="10.0dip" />
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <Button android:textSize="14.0sp" android:id="@id/btn_adapt" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="46.0dip" android:layout_margin="8.0dip" android:text="@string/cfg_adapt_params" android:textAllCaps="false" />
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="13.0sp" android:id="@id/tv_pick" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_not_picked" />
+                        <TextView android:textSize="12.0sp" android:id="@id/tv_resolution" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" />
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout android:orientation="vertical" android:id="@id/ll_preview_section" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_preview" android:letterSpacing="0.06" />
+                    <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <LinearLayout android:orientation="vertical" android:paddingTop="10.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                            <ProgressBar style="?android:attr/progressBarStyleHorizontal" android:id="@id/pb_parse" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="10.0dip" android:max="1000" android:progress="0" />
+                            <SeekBar android:id="@id/seek_playback" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" />
+                            <TextView android:textSize="12.0sp" android:id="@id/tv_play_time" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="0:00.00" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:id="@id/ll_appearance" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_layout" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <io.github.animwidget.LayoutPickerView android:id="@id/ly_scroll" android:clipToPadding="false" android:scrollbars="none" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingTop="6.0dip" android:paddingBottom="6.0dip" />
+                </LinearLayout>
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_shape" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <Button android:textSize="14.0sp" android:id="@id/btn_fit_content" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="46.0dip" android:layout_margin="4.0dip" android:text="@string/cfg_fit_on" android:textAllCaps="false" />
+                    <LinearLayout android:orientation="vertical" android:id="@id/ll_shapes" android:paddingTop="4.0dip" android:paddingBottom="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+                    <LinearLayout android:orientation="horizontal" android:padding="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <Button android:textSize="13.0sp" android:id="@id/btn_rotate" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="0.0dip" android:layout_height="42.0dip" android:text="@string/cfg_rotate_content_zero" android:layout_weight="1.0" android:textAllCaps="false" android:layout_marginEnd="6.0dip" />
+                        <Button android:textSize="13.0sp" android:id="@id/btn_rotate_shape" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="0.0dip" android:layout_height="42.0dip" android:text="@string/cfg_rotate_mask_zero" android:layout_weight="1.0" android:textAllCaps="false" android:layout_marginEnd="6.0dip" />
+                        <Button android:textSize="13.0sp" android:id="@id/btn_shapes_toggle" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="0.0dip" android:layout_height="42.0dip" android:text="@string/cfg_all_shapes" android:layout_weight="1.0" android:textAllCaps="false" />
+                    </LinearLayout>
+                </LinearLayout>
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_picture" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_fps" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_fps" />
+                        <SeekBar android:id="@id/seek_fps" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="49" android:progress="11" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_edge" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_edge" />
+                        <SeekBar android:id="@id/seek_edge" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="305" android:progress="75" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_quality" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_quality" />
+                        <SeekBar android:id="@id/seek_quality" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="50" android:progress="40" />
+                        <TextView android:textSize="11.0sp" android:id="@+id/tv_params" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="" />
+                    </LinearLayout>
+                </LinearLayout>
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_look" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_alpha" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_alpha" />
+                        <SeekBar android:id="@id/seek_alpha" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="100" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                            <TextView android:textSize="14.0sp" android:id="@id/tv_shadow" android:background="?android:selectableItemBackground" android:paddingTop="2.0dip" android:paddingBottom="2.0dip" android:focusable="true" android:clickable="true" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:text="@string/cfg_shadow" />
+                            <Button android:textSize="12.0sp" android:id="@id/btn_shadow_curve" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="wrap_content" android:layout_height="34.0dip" android:paddingStart="14.0dip" android:paddingEnd="14.0dip" android:text="@string/cfg_shadow_curve" android:textAllCaps="false" />
+                        </LinearLayout>
+                        <SeekBar android:id="@id/seek_shadow" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" />
+                        <LinearLayout android:orientation="vertical" android:id="@id/ll_shadow_curve" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip">
+                            <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                                <TextView android:textSize="11.0sp" android:id="@id/tv_curve_width" android:tag="muted" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" />
+                                <Button android:textSize="11.0sp" android:id="@id/btn_curve_reset" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="wrap_content" android:layout_height="30.0dip" android:paddingStart="12.0dip" android:paddingEnd="12.0dip" android:text="@string/cfg_shadow_curve_reset" android:textAllCaps="false" />
+                            </LinearLayout>
+                            <io.github.animwidget.ShadowCurveView android:id="@id/curve_shadow" android:layout_width="fill_parent" android:layout_height="72.0dip" android:layout_marginTop="4.0dip" />
+                            <LinearLayout android:orientation="vertical" android:paddingTop="7.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                                <TextView android:textSize="12.0sp" android:id="@id/tv_curve_spread" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_curve_spread" />
+                                <SeekBar android:id="@id/curve_spread" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="800" android:min="10" android:progress="50" />
+                            </LinearLayout>
+                            <LinearLayout android:orientation="vertical" android:paddingTop="7.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                                <TextView android:textSize="12.0sp" android:id="@id/tv_curve_grad" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_curve_grad" />
+                                <SeekBar android:id="@id/curve_grad" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="500" android:progress="288" />
+                            </LinearLayout>
+                            <LinearLayout android:orientation="vertical" android:paddingTop="7.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                                <TextView android:textSize="12.0sp" android:id="@id/tv_curve_gamma" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_curve_gamma" />
+                                <SeekBar android:id="@id/curve_gamma" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="500" android:min="0" android:progress="0" />
+                            </LinearLayout>
+                            <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                                <TextView android:textSize="11.0sp" android:tag="muted" android:letterSpacing="0.06" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_preset_fine" />
+                                <LinearLayout android:orientation="horizontal" android:paddingTop="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                                    <Button android:textSize="12.0sp" android:id="@id/btn_preset_edge" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="0.0dip" android:layout_height="34.0dip" android:layout_weight="1.0" android:layout_marginEnd="6.0dip" android:text="@string/cfg_preset_edge" android:textAllCaps="false" />
+                                    <Button android:textSize="12.0sp" android:id="@id/btn_preset_wide" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="0.0dip" android:layout_height="34.0dip" android:layout_weight="1.0" android:layout_marginEnd="6.0dip" android:text="@string/cfg_preset_wide" android:textAllCaps="false" />
+                                    <Button android:textSize="12.0sp" android:id="@id/btn_preset_tight" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="0.0dip" android:layout_height="34.0dip" android:layout_weight="1.0" android:text="@string/cfg_preset_tight" android:textAllCaps="false" />
+                                </LinearLayout>
+                            </LinearLayout>
+                            <TextView android:textSize="11.0sp" android:id="@id/tv_curve_hint" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="6.0dip" android:text="@string/cfg_shadow_curve_hint" />
+                            <TextView android:textSize="11.0sp" android:id="@id/tv_curve_off" android:tag="muted" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/cfg_shadow_curve_off" />
+                        </LinearLayout>
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_scale" android:background="?android:selectableItemBackground" android:paddingTop="2.0dip" android:paddingBottom="2.0dip" android:focusable="true" android:clickable="true" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_scale" />
+                        <TextView android:textSize="11.0sp" android:id="@+id/tv_scale_hint" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="1.0dip" android:text="@string/cfg_scale_hint" />
+                        <SeekBar android:id="@id/seek_scale" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="100" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <CheckBox android:textSize="14.0sp" android:id="@id/cb_border" android:layout_width="fill_parent" android:layout_height="50.0dip" android:text="@string/cfg_border" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" />
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:id="@id/row_hires" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                        <CheckBox android:textSize="14.0sp" android:id="@id/cb_hires" android:layout_width="fill_parent" android:layout_height="50.0dip" android:text="@string/cfg_hires" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" />
+                        <TextView android:textSize="11.0sp" android:id="@id/tv_hires_hint" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" android:layout_marginBottom="8.0dip" android:text="@string/cfg_hires_hint" />
+                    </LinearLayout>
+                    <LinearLayout android:orientation="vertical" android:id="@id/row_anim" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                        <TextView android:textSize="14.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" android:paddingTop="12.0dip" android:text="@string/cfg_anim_quality" />
+                        <TextView android:textSize="11.0sp" android:id="@id/tv_anim_hint" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" android:layout_marginTop="2.0dip" android:text="@string/cfg_anim_quality_hint" />
+                        <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="12.0dip" android:paddingEnd="12.0dip" android:paddingTop="8.0dip" android:paddingBottom="10.0dip">
+                            <Button android:textSize="11.0sp" android:id="@id/aq0" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="34.0dip" android:layout_marginEnd="6.0dip" android:text="@string/cfg_aq0" android:textAllCaps="false" />
+                            <Button android:textSize="11.0sp" android:id="@id/aq1" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="34.0dip" android:layout_marginEnd="6.0dip" android:text="@string/cfg_aq1" android:textAllCaps="false" />
+                            <Button android:textSize="11.0sp" android:id="@id/aq2" android:tag="pill_outline" android:background="@drawable/pill_outline" android:minWidth="0.0dip" android:layout_width="0.0dip" android:layout_weight="1.0" android:layout_height="34.0dip" android:text="@string/cfg_aq2" android:textAllCaps="false" />
+                        </LinearLayout>
+                    </LinearLayout>
+                    <CheckBox android:textSize="14.0sp" android:id="@id/cb_overlay" android:layout_width="fill_parent" android:layout_height="50.0dip" android:text="@string/cfg_overlay" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" />
+                    <CheckBox android:textSize="14.0sp" android:id="@id/cb_overlay_visible" android:layout_width="fill_parent" android:layout_height="50.0dip" android:text="@string/cfg_overlay_visible" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" />
+                    <Button android:textSize="13.0sp" android:id="@id/btn_mask_gesture" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="44.0dip" android:layout_marginTop="12.0dip" android:layout_marginStart="12.0dip" android:layout_marginEnd="12.0dip" android:text="@string/cfg_mask_gesture" android:textAllCaps="false" />
+                    <Button android:textSize="13.0sp" android:id="@id/btn_overlay_edit" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="44.0dip" android:layout_marginTop="8.0dip" android:layout_marginStart="12.0dip" android:layout_marginEnd="12.0dip" android:layout_marginBottom="12.0dip" android:text="@string/cfg_content_gesture" android:textAllCaps="false" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+    <Button android:textSize="15.0sp" android:id="@id/btn_save" android:tag="primary" android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="54.0dip" android:layout_marginTop="6.0dip" android:layout_marginBottom="14.0dip" android:text="@string/cfg_save" android:textAllCaps="false" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+</LinearLayout>

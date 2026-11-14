@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v1.10.491：**多格组件**的 appwidget-provider。
+
+  与 widget_info.xml 的差别只有三处：
+    1) initialLayout 指到 widget_multi（2×3 六格）；
+    2) 默认占 4×2 格、可双向缩放；
+    3) configure 仍指向 ConfigActivity（选素材的流程完全复用，不另做一套）。
+
+  「这一路是多格」由 AppWidgetManager.getAppWidgetInfo(id).provider 判定（见 MultiCell），
+  不额外存标记 —— provider 是系统事实，不会被我们自己写乱。
+-->
+<appwidget-provider android:minWidth="180.0dip" android:minHeight="110.0dip"
+    android:updatePeriodMillis="0" android:initialLayout="@layout/widget_multi"
+    android:configure="io.github.animwidget.ConfigActivity"
+    android:previewImage="@drawable/widget_preview" android:previewLayout="@layout/widget_multi"
+    android:description="@string/widget_desc" android:resizeMode="horizontal|vertical"
+    android:minResizeWidth="140.0dip" android:minResizeHeight="110.0dip"
+    android:widgetCategory="home_screen" android:widgetFeatures="reconfigurable"
+    android:targetCellWidth="4" android:targetCellHeight="2"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

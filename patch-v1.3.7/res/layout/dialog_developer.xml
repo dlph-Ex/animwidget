@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:padding="24.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center" android:orientation="vertical" android:id="@id/dev_header" android:paddingTop="22.0dip" android:paddingBottom="22.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <TextView android:textSize="30.0sp" android:gravity="center" android:id="@id/dev_avatar" android:layout_width="66.0dip" android:layout_height="66.0dip" android:text="🦊" />
+        <TextView android:textSize="20.0sp" android:textStyle="bold" android:textColor="#ffffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:text="@string/dev_name" />
+        <TextView android:textSize="12.0sp" android:textColor="#ccffffff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/dev_role" />
+    </LinearLayout>
+    <TextView android:textSize="14.0sp" android:id="@id/dev_qq" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:text="@string/dev_qq_value" />
+    <TextView android:textSize="14.0sp" android:id="@id/dev_version" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip" android:text="@string/dev_version" />
+    <Button android:textSize="14.0sp" android:id="@id/btn_dev_reward" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="fill_parent" android:layout_height="48.0dip" android:layout_marginTop="14.0dip" android:text="@string/settings_reward" android:textAllCaps="false" />
+    <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dip">
+        <Button android:textSize="14.0sp" android:id="@id/btn_dev_copy" android:tag="primary" android:background="@drawable/pill_primary" android:layout_width="0.0dip" android:layout_height="48.0dip" android:text="@string/dev_copy_qq" android:layout_weight="1.0" android:textAllCaps="false" android:layout_marginEnd="8.0dip" />
+        <Button android:textSize="14.0sp" android:id="@id/btn_dev_close" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="0.0dip" android:layout_height="48.0dip" android:text="@string/dev_close" android:layout_weight="1.0" android:textAllCaps="false" />
+    </LinearLayout>
+</LinearLayout>

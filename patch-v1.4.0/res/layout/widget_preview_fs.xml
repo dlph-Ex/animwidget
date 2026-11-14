@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v1.10.246：组件预览（AppWidgetProviderInfo.previewLayout，API 31+）。
+  比静态 previewImage 更接近真实观感；部分桌面（含国产 ROM）只在**有预览**时才把该 App
+  列进长按菜单的「组件 / 原子组件」入口。不引用主题色：预览由桌面在自己的上下文里 inflate。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10.0dip">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/widget_preview"
+        android:contentDescription="@string/widget_desc" />
+</FrameLayout>

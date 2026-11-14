@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- 顶部：真实桌面 + 组件框 -->
+    <FrameLayout
+        android:id="@+id/preview_frame"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:background="@drawable/desk_bg">
+
+        <!-- v1.10.519：壁纸底图不再是 ImageView + centerCrop。那个写法以**预览控件自己**（1260×738）为框，
+             壁纸在位图里垂直居中裁剪 → 整块被上移 (bh-738)/2 像素（实测 Δy=+839）。
+             现在改成按「整块显示区」对位的自绘 View，摆法是纯数学（WallpaperPlacement，门禁 [34] 脱机对拍）。 -->
+        <io.github.animwidget.WallpaperBackdropView
+            android:id="@+id/img_desk"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/cfg_preview" />
+
+        <FrameLayout
+            android:id="@+id/preview_box"
+            android:layout_width="220dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            android:background="@drawable/preview_outline"
+            android:padding="1dp"
+            android:tag="card">
+
+            <TextView
+                android:id="@+id/tv_preview_empty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="预览"
+                android:textColor="#66707A9A"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/img_preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:contentDescription="@string/cfg_preview"
+                android:scaleType="fitCenter" />
+        </FrameLayout>
+
+        <ProgressBar
+            android:id="@+id/pb_preview"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- 标签栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <TextView
+            android:id="@+id/tab_content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="内容"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tab_appearance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="外观"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/tab_indicator"
+        android:layout_width="180dp"
+        android:layout_height="3dp"
+        android:background="#FF4F46E5" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#22000000" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <!-- 内容页 -->
+            <LinearLayout
+                android:id="@+id/ll_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_video"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="@string/cfg_video" />
+
+                    <Button
+                        android:id="@+id/btn_gif"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="@string/cfg_gif" />
+
+                    <Button
+                        android:id="@+id/btn_image"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/cfg_image" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_adapt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="一键适配素材参数" />
+
+                <TextView
+                    android:id="@+id/tv_pick"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/cfg_not_picked"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <TextView
+                    android:id="@+id/tv_resolution"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <SeekBar
+                    android:id="@+id/seek_playback"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:max="100"
+                    android:progress="0" />
+
+                <TextView
+                    android:id="@+id/tv_play_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0 µs"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </LinearLayout>
+
+            <!-- 外观页 -->
+            <LinearLayout
+                android:id="@+id/ll_appearance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_fps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cfg_fps" />
+
+                <SeekBar
+                    android:id="@+id/seek_fps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="49"
+                    android:progress="11" />
+
+                <TextView
+                    android:id="@+id/tv_edge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cfg_edge" />
+
+                <SeekBar
+                    android:id="@+id/seek_edge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="305"
+                    android:progress="75" />
+
+                <TextView
+                    android:id="@+id/tv_quality"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cfg_quality" />
+
+                <SeekBar
+                    android:id="@+id/seek_quality"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="50"
+                    android:progress="40" />
+
+                <TextView
+                    android:id="@+id/tv_scale"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:text="@string/cfg_scale" />
+
+                <SeekBar
+                    android:id="@+id/seek_scale"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="100" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/cfg_layout" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/ly0"
+                        style="@style/ShapeChip" />
+
+                    <TextView
+                        android:id="@+id/ly1"
+                        style="@style/ShapeChip" />
+
+                    <TextView
+                        android:id="@+id/ly2"
+                        style="@style/ShapeChip" />
+
+                    <TextView
+                        android:id="@+id/ly3"
+                        style="@style/ShapeChip" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/ly4"
+                        style="@style/ShapeChip" />
+
+                    <TextView
+                        android:id="@+id/ly5"
+                        style="@style/ShapeChip" />
+
+                    <TextView
+                        android:id="@+id/ly6"
+                        style="@style/ShapeChip" />
+
+                    <TextView
+                        android:id="@+id/ly7"
+                        style="@style/ShapeChip" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/cfg_shape" />
+
+                <Button
+                    android:id="@+id/btn_fit_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="适配画面：开" />
+
+                <LinearLayout
+                    android:id="@+id/ll_shapes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_rotate"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="内容 0°" />
+
+                    <Button
+                        android:id="@+id/btn_rotate_shape"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="蒙版 0°" />
+
+                    <Button
+                        android:id="@+id/btn_shapes_toggle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="展开全部形状" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_alpha"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/cfg_alpha" />
+
+                <SeekBar
+                    android:id="@+id/seek_alpha"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="100" />
+
+                <TextView
+                    android:id="@+id/tv_shadow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:text="@string/cfg_shadow" />
+
+                <SeekBar
+                    android:id="@+id/seek_shadow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="0" />
+
+                <CheckBox
+                    android:id="@+id/cb_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cfg_border" />
+
+                <CheckBox
+                    android:id="@+id/cb_overlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cfg_overlay" />
+
+                <CheckBox
+                    android:id="@+id/cb_overlay_visible"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cfg_overlay_visible" />
+
+                <Button
+                    android:id="@+id/btn_overlay_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cfg_overlay_edit" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/cfg_save" />
+</LinearLayout>

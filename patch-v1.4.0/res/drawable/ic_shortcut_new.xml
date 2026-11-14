@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 快捷方式图标：加号（24 网格，实心，白）。桌面弹层是深色，白色最稳。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24.0dip"
+    android:height="24.0dip"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M10.9,4.2h2.2v6.7h6.7v2.2h-6.7v6.7h-2.2v-6.7H4.2v-2.2h6.7z" />
+</vector>

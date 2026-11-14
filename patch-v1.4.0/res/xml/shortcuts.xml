@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  长按桌面图标弹出的快捷项（Android 7.1+ / 我们 minSdk 26 起全支持）。
+  v1.10.250：删掉了「新建一个桌面组件」—— 它的 intent 是 ACTION_MAIN，行为和点 App 图标
+  完全一样，但标签承诺"新建组件"，属于名不符实；留下功能对得上的那一个。
+  注意：长按菜单里的「原子组件 / 小组件」那一条是**桌面自己加的**（OriginOS 叫原子组件），
+  App 管不到；App 能加的是下面这些自己定义的快捷项。
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="pin_widget"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_pin"
+        android:shortcutShortLabel="@string/shortcut_pin_short"
+        android:shortcutLongLabel="@string/shortcut_pin_long">
+        <intent
+            android:action="io.github.animwidget.action.PIN_WIDGET"
+            android:targetPackage="io.github.animwidget"
+            android:targetClass="io.github.animwidget.PinWidgetActivity" />
+    </shortcut>
+</shortcuts>

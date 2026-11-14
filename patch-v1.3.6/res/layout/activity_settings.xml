@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ScrollView android:id="@id/root_settings" android:layout_width="fill_parent" android:layout_height="fill_parent" android:fillViewport="true" android:overScrollMode="never">
+        <LinearLayout android:orientation="vertical" android:paddingTop="52.0dip" android:paddingBottom="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="26.0sp" android:textStyle="bold" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_title" android:layout_weight="1.0" />
+                <Button android:id="@id/btn_dev_info" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="wrap_content" android:layout_height="42.0dip" android:text="@string/settings_dev" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/row_language_header" android:padding="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <ImageView android:id="@id/img_language" android:layout_width="34.0dip" android:layout_height="34.0dip" android:src="@drawable/ic_language" android:contentDescription="@string/settings_language" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="12.0dip">
+                        <TextView android:textSize="15.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_language" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/settings_language_hint" />
+                    </LinearLayout>
+                    <TextView android:textSize="18.0sp" android:gravity="center" android:id="@id/btn_language_toggle" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="▾" android:contentDescription="@string/settings_language" />
+                </LinearLayout>
+                <RadioGroup android:orientation="vertical" android:id="@id/rg_language" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="6.0dip" android:paddingEnd="14.0dip">
+                    <RadioButton android:id="@id/rb_lang_system" android:layout_width="fill_parent" android:layout_height="48.0dip" android:text="@string/settings_language_system" />
+                    <RadioButton android:id="@id/rb_lang_zh" android:layout_width="fill_parent" android:layout_height="48.0dip" android:text="@string/settings_language_zh" />
+                    <RadioButton android:id="@id/rb_lang_en" android:layout_width="fill_parent" android:layout_height="48.0dip" android:text="@string/settings_language_en" />
+                </RadioGroup>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:paddingTop="8.0dip" android:paddingBottom="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingTop="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <TextView android:textSize="18.0sp" android:gravity="center" android:tag="icon_tile_3" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="☾" />
+                    <TextView android:textSize="15.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_dark_mode" android:layout_weight="1.0" android:layout_marginStart="12.0dip" />
+                </LinearLayout>
+                <RadioGroup android:orientation="vertical" android:id="@id/rg_mode" android:paddingTop="2.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <RadioButton android:id="@id/rb_system" android:layout_width="fill_parent" android:layout_height="48.0dip" android:text="@string/settings_follow_system" />
+                    <RadioButton android:id="@id/rb_light" android:layout_width="fill_parent" android:layout_height="48.0dip" android:text="@string/settings_light" />
+                    <RadioButton android:id="@id/rb_dark" android:layout_width="fill_parent" android:layout_height="48.0dip" android:text="@string/settings_dark" />
+                </RadioGroup>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:paddingTop="10.0dip" android:paddingBottom="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <TextView android:textSize="17.0sp" android:gravity="center" android:tag="icon_tile_2" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="🎨" />
+                    <TextView android:textSize="15.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_presets" android:layout_weight="1.0" android:layout_marginStart="12.0dip" />
+                </LinearLayout>
+                <LinearLayout android:orientation="horizontal" android:id="@id/ll_presets" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="6.0dip" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <TextView android:textSize="18.0sp" android:gravity="center" android:tag="icon_tile" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="⇄" />
+                    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="12.0dip">
+                        <TextView android:textSize="15.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_invert" />
+                        <TextView android:textSize="11.0sp" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="2.0dip" android:text="@string/settings_invert_hint" />
+                    </LinearLayout>
+                    <android.widget.Switch android:id="@id/cb_invert" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+                <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="14.0dip" android:layout_marginEnd="14.0dip" />
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingTop="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <TextView android:textSize="18.0sp" android:gravity="center" android:tag="icon_tile_3" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="◐" />
+                    <TextView android:textSize="15.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_contrast_label" android:layout_weight="1.0" android:layout_marginStart="12.0dip" />
+                    <TextView android:textSize="12.0sp" android:gravity="center" android:id="@id/tv_contrast" android:tag="chip_value" android:background="@drawable/pill_soft" android:paddingTop="5.0dip" android:paddingBottom="5.0dip" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="48.0dip" android:text="0" android:paddingStart="10.0dip" android:paddingEnd="10.0dip" />
+                </LinearLayout>
+                <SeekBar android:id="@id/seek_contrast" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="20" android:progress="10" android:layout_marginStart="8.0dip" android:layout_marginEnd="8.0dip" />
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:paddingTop="6.0dip" android:paddingBottom="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+                <TextView android:textSize="14.0sp" android:paddingTop="8.0dip" android:paddingBottom="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_colors" android:paddingStart="14.0dip" android:paddingEnd="14.0dip" />
+                <LinearLayout android:orientation="vertical" android:id="@id/ll_colors" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+                <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="14.0dip" android:layout_marginEnd="14.0dip" />
+                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/row_shape_system" android:paddingTop="7.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
+                    <CheckBox android:gravity="center_vertical" android:id="@id/cb_shape_system" android:layout_width="40.0dip" android:layout_height="40.0dip" />
+                    <TextView android:textSize="14.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_shape_follow" android:layout_weight="1.0" android:layout_marginStart="8.0dip" />
+                </LinearLayout>
+                <TextView android:textSize="11.0sp" android:tag="muted" android:paddingBottom="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_shape_hint" android:paddingStart="62.0dip" android:paddingEnd="14.0dip" />
+            </LinearLayout>
+            <Button android:textSize="14.0sp" android:id="@id/btn_reset_theme" android:tag="danger" android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="50.0dip" android:layout_marginTop="16.0dip" android:text="@string/settings_reset" android:textAllCaps="false" />
+        </LinearLayout>
+    </ScrollView>
+    <TextView android:textSize="13.0sp" android:gravity="center" android:layout_gravity="start|center|top" android:id="@id/btn_settings_close" android:tag="close_pill" android:background="@drawable/pill_soft" android:focusable="true" android:clickable="true" android:layout_width="wrap_content" android:layout_height="38.0dip" android:layout_marginTop="8.0dip" android:text="@string/settings_close" android:contentDescription="@string/settings_close" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:layout_marginStart="16.0dip" android:elevation="4.0dip" />
+</FrameLayout>

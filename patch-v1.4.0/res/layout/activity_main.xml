@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v1.10.392：主页第三次重做 —— 这次换的是**排版系统**，不是参数。
+
+  前两版（389 调字号/内边距、391 把胶囊竖成「设置项」）都留着同一个骨架：
+  「一列控件 + 卡片兜底」。所以不管字号怎么变，读起来都还是「一个表单」。
+  这一版按国际字体风格（Swiss / International Typographic Style）的硬规矩重建：
+
+    ① **不画框**：整页零卡片、零胶囊容器。分组只靠**贯通屏幕左右边缘的发丝线**
+       （线一律 1dp、tag=divider，走 ThemeManager 的线条色唯一出口），
+       以及「左栏序号 / 右栏内容」的两列对齐。这是版式，不是装饰。
+    ② **一条左栏（42dp）**：序号 01…04 住在这条栏里（9.5dp 等宽，宽 22dp，起点 20dp），
+       其余**所有**内容（报头副行除外）左边缘都落在 42dp —— 一条看得见的栏线。
+       于是每个区块的起点、主数字、表格标签、色带文字全部同一条竖线上。
+    ③ **层级靠字号跨度**：报头 27sp / 主数字 52sp / 区块标签 10.5sp(0.12 字距) /
+       等宽微字 9.5sp(0.14 字距) / 正文 13sp。高对比层级只有两个，
+       其余全部退到 62% / 44% 的灰 —— 灰度下层级依然成立（Swiss 的判据）。
+    ④ **颜色只用一次**：「新建组件」是一条贯通左右边缘的实心色带（72dp、直角、
+       两行左对齐）。它是整页唯一的高饱和面积，也是唯一的行为焦点；其余动作全是文字。
+
+  版面顺序 = 报头 / 01 桌面上的组件（实时计数）/ 色带 / 02 运行环境 / 03 运行状态 /
+  04 我的组件 / 底部「全部停止」+ 说明。
+
+  颜色全部走 tag（band / on_primary / on_primary_dim / dim / dim2 / muted_quiet /
+  divider / ghost_dim / pill_soft），用户换自定义配色这一页跟着换，零硬编码色值。
+
+  为什么内容块各自带内边距、外层不再统一 padding：
+  发丝线要**真的**从屏幕左沿通到右沿（这是整页最贵的一条设计决定）。
+  外层一旦统一 20dp，所有线都会缩成「卡边框」，版式立刻退回上一版。
+-->
+<ScrollView android:id="@id/scroll_main"
+    android:layout_width="fill_parent" android:layout_height="fill_parent"
+    android:fillViewport="true" android:background="@null"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical"
+        android:layout_width="fill_parent" android:layout_height="fill_parent">
+
+        <!-- ① 报头：27sp 名称 + 等宽大写副行（复用 intro_sub，不新增文案） -->
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+            android:paddingStart="20.0dip" android:paddingEnd="20.0dip"
+            android:paddingTop="20.0dip" android:paddingBottom="16.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <LinearLayout android:orientation="vertical"
+                android:layout_width="0.0dip" android:layout_height="wrap_content"
+                android:layout_weight="1.0">
+                <TextView android:textSize="27.0sp" android:textStyle="bold" android:letterSpacing="-0.03"
+                    android:includeFontPadding="false"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/app_name" />
+                <TextView android:textSize="9.5sp" android:tag="dim2" android:letterSpacing="0.14"
+                    android:fontFamily="monospace" android:textAllCaps="true"
+                    android:layout_marginTop="7.0dip"
+                    android:layout_width="fill_parent" android:layout_height="wrap_content"
+                    android:text="@string/main_kicker" />
+            </LinearLayout>
+            <io.github.animwidget.TuneMarkView android:id="@id/btn_settings"
+                android:layout_width="44.0dip" android:layout_height="44.0dip"
+                android:contentDescription="@string/settings_title" />
+        </LinearLayout>
+
+        <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" />
+
+        <!-- ② 01 桌面上的组件：整页的视觉重心 = 三格仪表读数（组件 / 在播放 / 帧）。
+             三格各占 1/3、中间两条竖发丝线 —— 一格里只有一个大数字 + 一个等宽小标签。
+             之所以是「三格」而不是「一个孤零零的大数字」：一格数字右边会空掉 2/3 屏，
+             那是留白不足而不是留白；三格既填满这条横带，读到的又全是真数据。 -->
+        <LinearLayout android:orientation="vertical"
+            android:paddingStart="20.0dip" android:paddingEnd="20.0dip"
+            android:paddingTop="18.0dip" android:paddingBottom="16.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+                android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="9.5sp" android:tag="dim2" android:fontFamily="monospace"
+                    android:letterSpacing="0.1" android:layout_width="22.0dip"
+                    android:layout_height="wrap_content" android:text="01" />
+                <TextView android:textSize="10.5sp" android:tag="muted_quiet" android:letterSpacing="0.12"
+                    android:layout_width="0.0dip" android:layout_weight="1.0"
+                    android:layout_height="wrap_content" android:text="@string/main_hero_label" />
+            </LinearLayout>
+
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+                android:layout_width="fill_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8.0dip" android:paddingStart="22.0dip">
+
+                <LinearLayout android:orientation="vertical"
+                    android:layout_width="0.0dip" android:layout_weight="1.0"
+                    android:layout_height="wrap_content">
+                    <TextView android:textSize="30.0sp" android:textStyle="bold" android:fontFamily="monospace"
+                        android:includeFontPadding="false" android:letterSpacing="-0.02" android:maxLines="1"
+                        android:id="@id/tv_hero_num"
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:text="0" />
+                    <TextView android:textSize="9.5sp" android:tag="dim2" android:fontFamily="monospace"
+                        android:letterSpacing="0.1" android:layout_marginTop="4.0dip" android:maxLines="1"
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:text="@string/main_hero_widgets" />
+                </LinearLayout>
+
+                <View android:tag="divider" android:layout_width="1.0dip" android:layout_height="38.0dip" />
+
+                <LinearLayout android:orientation="vertical"
+                    android:paddingStart="14.0dip"
+                    android:layout_width="0.0dip" android:layout_weight="1.0"
+                    android:layout_height="wrap_content">
+                    <TextView android:textSize="30.0sp" android:textStyle="bold" android:fontFamily="monospace"
+                        android:includeFontPadding="false" android:letterSpacing="-0.02" android:maxLines="1"
+                        android:id="@id/tv_hero_play"
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:text="0" />
+                    <TextView android:textSize="9.5sp" android:tag="dim2" android:fontFamily="monospace"
+                        android:letterSpacing="0.1" android:layout_marginTop="4.0dip" android:maxLines="1"
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:text="@string/main_hero_play" />
+                </LinearLayout>
+
+                <View android:tag="divider" android:layout_width="1.0dip" android:layout_height="38.0dip" />
+
+                <LinearLayout android:orientation="vertical"
+                    android:paddingStart="14.0dip"
+                    android:layout_width="0.0dip" android:layout_weight="1.0"
+                    android:layout_height="wrap_content">
+                    <TextView android:textSize="30.0sp" android:textStyle="bold" android:fontFamily="monospace"
+                        android:includeFontPadding="false" android:letterSpacing="-0.02" android:maxLines="1"
+                        android:id="@id/tv_hero_frames"
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:text="0" />
+                    <TextView android:textSize="9.5sp" android:tag="dim2" android:fontFamily="monospace"
+                        android:letterSpacing="0.1" android:layout_marginTop="4.0dip" android:maxLines="1"
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:text="@string/main_hero_frames" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ③ 唯一的高饱和面积：贯通左沿到右沿的实心色带（直角、两行左对齐）。
+             它是整页唯一的行为焦点，所以是**唯一**一块实色；
+             按下反馈走 foreground 的系统水波纹，不看 tag。
+             注意：色带下面不再补发丝线 —— 它自己就是一条硬边。 -->
+        <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
+            android:id="@id/btn_add" android:tag="band"
+            android:clickable="true" android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+            android:layout_width="fill_parent" android:layout_height="72.0dip">
+            <LinearLayout android:orientation="vertical"
+                android:layout_width="0.0dip" android:layout_height="wrap_content"
+                android:layout_weight="1.0">
+                <TextView android:textSize="16.0sp" android:textStyle="bold" android:tag="on_primary"
+                    android:includeFontPadding="false"
+                    android:layout_width="fill_parent" android:layout_height="wrap_content"
+                    android:text="@string/main_band_title" />
+                <TextView android:textSize="9.5sp" android:tag="on_primary_dim" android:fontFamily="monospace"
+                    android:letterSpacing="0.12" android:textAllCaps="true"
+                    android:layout_width="fill_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4.0dip" android:text="@string/main_band_sub" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 色带本身就是一条硬边，下面不再补线（补了会在实色下沿出现一条发丝） -->
+
+        <!-- ④ 02 运行环境：三行「标签 — 状态」+ 一行开关。没有卡片，只有线和列 -->
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+            android:paddingStart="20.0dip" android:paddingEnd="20.0dip"
+            android:paddingTop="22.0dip" android:paddingBottom="8.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="9.5sp" android:tag="dim2" android:fontFamily="monospace"
+                android:letterSpacing="0.1" android:layout_width="22.0dip"
+                android:layout_height="wrap_content" android:text="02" />
+            <TextView android:textSize="10.5sp" android:tag="muted_quiet" android:letterSpacing="0.12"
+                android:layout_width="0.0dip" android:layout_weight="1.0"
+                android:layout_height="wrap_content" android:text="@string/main_sec_env" />
+        </LinearLayout>
+
+        <LinearLayout android:orientation="vertical" android:id="@id/ll_env"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+                android:id="@id/btn_shizuku" android:clickable="true" android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+                android:layout_width="fill_parent" android:layout_height="54.0dip">
+                <TextView android:textSize="13.0sp" android:layout_width="0.0dip"
+                    android:layout_height="wrap_content" android:layout_weight="1.0"
+                    android:maxLines="1" android:ellipsize="end"
+                    android:text="@string/main_row_shizuku" />
+                <TextView android:textSize="10.5sp" android:tag="dim2" android:fontFamily="monospace"
+                    android:id="@id/tv_shizuku_state"
+                    android:layout_marginStart="12.0dip"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/main_state_idle" />
+            </LinearLayout>
+
+            <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" />
+
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+                android:id="@id/btn_battery" android:clickable="true" android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+                android:layout_width="fill_parent" android:layout_height="54.0dip">
+                <TextView android:textSize="13.0sp" android:layout_width="0.0dip"
+                    android:layout_height="wrap_content" android:layout_weight="1.0"
+                    android:maxLines="1" android:ellipsize="end"
+                    android:text="@string/main_row_battery" />
+                <TextView android:textSize="10.5sp" android:tag="dim2" android:fontFamily="monospace"
+                    android:id="@id/tv_battery_state"
+                    android:layout_marginStart="12.0dip"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/main_state_off" />
+            </LinearLayout>
+
+            <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" />
+
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+                android:id="@id/btn_usage" android:clickable="true" android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+                android:layout_width="fill_parent" android:layout_height="54.0dip">
+                <TextView android:textSize="13.0sp" android:layout_width="0.0dip"
+                    android:layout_height="wrap_content" android:layout_weight="1.0"
+                    android:maxLines="1" android:ellipsize="end"
+                    android:text="@string/main_row_usage" />
+                <TextView android:textSize="10.5sp" android:tag="dim2" android:fontFamily="monospace"
+                    android:id="@id/tv_usage_state"
+                    android:layout_marginStart="12.0dip"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/diag_denied" />
+            </LinearLayout>
+
+            <!-- v1.10.497：这里原来还有一格「性能锚点 + 开关」。用户要求把它整块搬进
+                 「设置 → 性能」，并**连同它那条分隔线一起删掉**（否则卡片底部会留一条悬空的线）。
+                 开关的落点、取值与副作用见 SettingsActivity.bindPerfCard 的最后一行。 -->
+        </LinearLayout>
+
+        <!-- ⑤ 03 运行状态：等宽读数块。它本来就该是「查」的信息，不是「读」的段落 -->
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+            android:paddingStart="20.0dip" android:paddingEnd="20.0dip"
+            android:paddingTop="24.0dip" android:paddingBottom="8.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="9.5sp" android:tag="dim2" android:fontFamily="monospace"
+                android:letterSpacing="0.1" android:layout_width="22.0dip"
+                android:layout_height="wrap_content" android:text="03" />
+            <TextView android:textSize="10.5sp" android:tag="muted_quiet" android:letterSpacing="0.12"
+                android:layout_width="0.0dip" android:layout_weight="1.0"
+                android:layout_height="wrap_content" android:text="@string/main_sec_state" />
+        </LinearLayout>
+
+        <LinearLayout android:orientation="vertical"
+            android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+            android:paddingBottom="4.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="10.5sp" android:tag="dim" android:id="@id/tv_backend"
+                android:fontFamily="monospace" android:lineSpacingMultiplier="1.5"
+                android:layout_width="fill_parent" android:layout_height="wrap_content"
+                android:text="@string/main_backend_idle" />
+            <TextView android:textSize="11.0sp" android:tag="dim" android:id="@id/tv_desk_policy"
+                android:lineSpacingMultiplier="1.55"
+                android:layout_marginTop="6.0dip"
+                android:layout_width="fill_parent" android:layout_height="wrap_content"
+                android:text="@string/main_desk_tip" />
+            <TextView android:textSize="10.5sp" android:tag="dim2" android:id="@id/tv_diag"
+                android:fontFamily="monospace" android:lineSpacingMultiplier="1.5"
+                android:layout_marginTop="6.0dip"
+                android:layout_width="fill_parent" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- ⑥ 04 我的组件 -->
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal"
+            android:paddingStart="20.0dip" android:paddingEnd="20.0dip"
+            android:paddingTop="24.0dip" android:paddingBottom="6.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="9.5sp" android:tag="dim2" android:fontFamily="monospace"
+                android:letterSpacing="0.1" android:layout_width="22.0dip"
+                android:layout_height="wrap_content" android:text="04" />
+            <TextView android:textSize="10.5sp" android:tag="muted_quiet" android:letterSpacing="0.12"
+                android:layout_width="0.0dip" android:layout_weight="1.0"
+                android:layout_height="wrap_content" android:text="@string/main_sec_widgets" />
+        </LinearLayout>
+
+        <TextView android:textSize="11.5sp" android:tag="dim" android:id="@id/tv_empty"
+            android:lineSpacingMultiplier="1.55"
+            android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+            android:paddingTop="4.0dip" android:paddingBottom="10.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content"
+            android:text="@string/main_empty" />
+        <LinearLayout android:orientation="vertical" android:id="@id/ll_widgets"
+            android:layout_width="fill_parent" android:layout_height="wrap_content" />
+
+        <!-- 弹性留白：内容不满一屏时，把「全部停止 + 说明」压到屏幕底部 -->
+        <View android:layout_width="fill_parent" android:layout_height="0.0dip"
+            android:layout_weight="1.0" android:minHeight="18.0dip" />
+
+        <!-- ⑦ 底部动作：文字动作（不是胶囊），上方一条线把它和内容分开 -->
+        <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" />
+        <Button android:textSize="12.5sp" android:id="@id/btn_toggle" android:tag="ghost_dim"
+            android:background="@null" android:textAllCaps="false" android:letterSpacing="0.04"
+            android:gravity="start|center_vertical"
+            android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+            android:layout_width="fill_parent" android:layout_height="52.0dip"
+            android:text="@string/main_stop_all" />
+
+        <!-- ⑧ 说明：44% 灰、10.5sp、1.55 行距 -->
+        <TextView android:textSize="10.5sp" android:tag="dim2" android:lineSpacingMultiplier="1.55"
+            android:paddingStart="42.0dip" android:paddingEnd="20.0dip"
+            android:paddingTop="10.0dip" android:paddingBottom="30.0dip"
+            android:layout_width="fill_parent" android:layout_height="wrap_content"
+            android:text="@string/notes" />
+    </LinearLayout>
+</ScrollView>

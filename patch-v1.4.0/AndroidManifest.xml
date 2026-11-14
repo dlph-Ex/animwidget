@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="34" android:compileSdkVersionCodename="14" package="io.github.animwidget" platformBuildVersionCode="34" platformBuildVersionName="14">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:maxSdkVersion="32" android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"/>
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23"/>
+    <!-- v1.10.386：「关于」页的检测更新只访问 GitHub Releases API，不做任何上报 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- v1.10.42：Android 11+ 包可见性 —— 不加这些，queryIntentActivities 看不到文件管理器，
+         getLaunchIntentForPackage("bin.mt.plus") 也会直接返回 null -->
+    <queries>
+        <package android:name="bin.mt.plus"/>
+        <package android:name="com.android.documentsui"/>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:mimeType="vnd.android.document/directory"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+    <application android:allowBackup="true" android:enableOnBackInvokedCallback="true" android:name=".App" android:icon="@drawable/ic_launcher" android:label="@string/app_name" android:supportsRtl="true" android:theme="@style/Theme.AnimWidget">
+        <!-- v1.10.190：全应用锁竖屏 —— 9 个 Activity 全部 screenOrientation="portrait"。
+             起因：转屏会重建 ConfigActivity，未落盘的素材/参数全丢（v1.10.189 曾用
+             onSaveInstanceState 接回来，按需求撤销，改成「根本不许转」）。
+             注意：桌面小组件本身画在 launcher 进程里，方向由桌面决定，App 端管不到；
+             这里能锁的是 App 内所有页面，含「添加小组件」时打开的配置页。 -->
+        <activity android:configChanges="uiMode" android:exported="true" android:label="@string/app_name" android:name=".MainActivity" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- v1.10.245：长按图标弹出的快捷项（新建组件 / 添加组件到桌面） -->
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
+        </activity>
+        <!-- v1.10.245：长按「添加组件到桌面」的透明落点，只发 requestPinAppWidget 然后 finish -->
+        <activity android:exported="true" android:name=".PinWidgetActivity" android:excludeFromRecents="true"
+                  android:noHistory="true" android:taskAffinity="" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <activity android:configChanges="uiMode" android:exported="false" android:label="@string/settings_title" android:name=".SettingsActivity" android:screenOrientation="portrait"/>
+        <!-- v1.10.98：开屏说明（需求 3）+ 开发者页（需求 5） -->
+        <activity android:configChanges="uiMode" android:exported="false" android:label="@string/app_name" android:name=".CreatorIntroActivity" android:screenOrientation="portrait"/>
+        <activity android:configChanges="uiMode" android:exported="false" android:label="@string/dev_title" android:name=".DeveloperActivity" android:screenOrientation="portrait"/>
+        <activity android:configChanges="uiMode" android:exported="true" android:label="@string/cfg_title" android:name=".ConfigActivity" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+        <activity android:configChanges="uiMode" android:exported="false" android:label="@string/log_title" android:name=".LogActivity" android:screenOrientation="portrait"/>
+        <activity android:configChanges="uiMode" android:exported="false" android:label="@string/anim_picker_title" android:name=".AnimatedPickerActivity" android:screenOrientation="portrait"/>
+        <activity android:configChanges="uiMode" android:exported="false" android:label="@string/export_history_title" android:name=".ExportHistoryActivity" android:screenOrientation="portrait"/>
+        <activity android:configChanges="uiMode" android:exported="false" android:label="@string/log_diag_page_title" android:name=".DiagCatalogActivity" android:screenOrientation="portrait"/>
+        <receiver android:exported="true" android:name=".WidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info"/>
+        </receiver>
+        <service android:exported="false" android:foregroundServiceType="specialUse" android:name=".PlaybackService">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Animated home screen widget playback (GIF/MP4/images)"/>
+        </service>
+        <service android:exported="false" android:foregroundServiceType="specialUse" android:name=".OverlayService">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Desktop overlay playback for video/GIF"/>
+        </service>
+        <!-- v1.10.116（B 方案）：给桌面读帧文件用的只读 provider（不对外导出，按 URI 单条授权） -->
+        <provider android:authorities="io.github.animwidget.frames" android:enabled="true" android:exported="false" android:grantUriPermissions="true" android:name=".FrameProvider"/>
+        <meta-data android:name="moe.shizuku.client.V3_SUPPORT" android:value="true"/>
+        <provider android:authorities="io.github.animwidget.shizuku" android:enabled="true" android:exported="true" android:multiprocess="false" android:name="rikka.shizuku.ShizukuProvider" android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"/>
+    </application>
+</manifest>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <io.github.animwidget.AuroraView android:id="@+id/dev_aurora"
+        android:layout_width="match_parent" android:layout_height="match_parent" />
+    <View android:id="@+id/dev_scrim"
+        android:layout_width="match_parent" android:layout_height="match_parent" />
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent"
+        android:fillViewport="true" android:overScrollMode="always" android:scrollbars="none">
+        <LinearLayout android:orientation="vertical"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingTop="52dp" android:paddingBottom="34dp"
+            android:paddingStart="20dp" android:paddingEnd="20dp">
+
+            <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
+                android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView android:id="@+id/dev_back" android:textSize="13sp" android:tag="close_pill"
+                    android:gravity="center" android:clickable="true" android:focusable="true"
+                    android:paddingStart="16dp" android:paddingEnd="16dp"
+                    android:layout_width="wrap_content" android:layout_height="38dp"
+                    android:text="@string/dev_back" />
+                <TextView android:id="@+id/dev_kicker_tv" android:textSize="12sp" android:tag="muted"
+                    android:gravity="end" android:letterSpacing="0.14"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                    android:text="@string/dev_kicker" />
+            </LinearLayout>
+
+            <!-- 创作者名片 -->
+            <LinearLayout android:id="@+id/dev_hero" android:orientation="vertical"
+                android:padding="18dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="18dp">
+                <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
+                    android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:id="@+id/dev_avatar" android:textSize="30sp" android:gravity="center"
+                        android:layout_width="62dp" android:layout_height="62dp" android:text="🦊" />
+                    <LinearLayout android:orientation="vertical"
+                        android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp">
+                        <TextView android:id="@+id/dev_name_tv" android:textSize="21sp" android:textStyle="bold"
+                            android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:text="@string/dev_name" />
+                        <TextView android:id="@+id/dev_slogan_tv" android:textSize="12sp"
+                            android:lineSpacingExtra="2dp"
+                            android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp" android:text="@string/dev_slogan" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 技术底座 -->
+            <LinearLayout android:orientation="vertical" android:tag="card"
+                android:paddingTop="10dp" android:paddingBottom="10dp"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+                <TextView android:textSize="14sp" android:textStyle="bold" android:tag="section"
+                    android:paddingTop="6dp" android:paddingBottom="6dp"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:paddingStart="16dp" android:paddingEnd="16dp"
+                    android:text="@string/dev_sec_caps" />
+                <LinearLayout android:id="@+id/dev_caps_host" android:orientation="vertical"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- 调试与记录 -->
+            <LinearLayout android:orientation="vertical" android:tag="card"
+                android:paddingTop="10dp" android:paddingBottom="12dp"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+                <TextView android:textSize="14sp" android:textStyle="bold" android:tag="section"
+                    android:paddingTop="6dp" android:paddingBottom="6dp"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:paddingStart="16dp" android:paddingEnd="16dp"
+                    android:text="@string/dev_sec_records" />
+                <LinearLayout android:orientation="vertical"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:paddingStart="14dp" android:paddingEnd="14dp">
+                    <Button android:id="@+id/dev_btn_logs" android:textSize="14sp" android:tag="pill_soft"
+                        android:background="@drawable/pill_soft" android:textAllCaps="false"
+                        android:layout_width="match_parent" android:layout_height="48dp"
+                        android:layout_marginTop="6dp" android:text="@string/dev_open_logs" />
+                    <Button android:id="@+id/dev_btn_intro" android:textSize="14sp" android:tag="pill_soft"
+                        android:background="@drawable/pill_soft" android:textAllCaps="false"
+                        android:layout_width="match_parent" android:layout_height="48dp"
+                        android:layout_marginTop="8dp" android:text="@string/dev_replay_intro" />
+                    <Button android:id="@+id/dev_btn_reward" android:textSize="14sp" android:tag="pill_soft"
+                        android:background="@drawable/pill_soft" android:textAllCaps="false"
+                        android:layout_width="match_parent" android:layout_height="48dp"
+                        android:layout_marginTop="8dp" android:text="@string/settings_reward" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 关于
+                 v1.10.362：**位置重排**。用户截图（红箭头）指的是卡片**右上角**那格空位：
+                 合并胶囊横跨「标题行 → QQ 行」，上格贴着卡片右上角，下格落在原来「复制 QQ」的位置。
+                 上一版把胶囊塞进 QQ 那一行（horizontal + center_vertical），
+                 两格 81dp 比那一行高得多，整行被撑高、胶囊被垂直居中 → 跑到了卡片正中间。 -->
+            <FrameLayout android:tag="card" android:clipChildren="false"
+                android:paddingTop="10dp" android:paddingBottom="10dp"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+
+                <!-- 左侧文字列：右边留 108dp = 胶囊 92dp + 间隔 16dp。
+                     版本号再长也只会在列内折行，永远压不到胶囊上。 -->
+                <LinearLayout android:orientation="vertical"
+                    android:paddingStart="16dp" android:paddingEnd="108dp"
+                    android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:textSize="14sp" android:textStyle="bold" android:tag="section"
+                        android:paddingTop="6dp" android:paddingBottom="4dp"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="@string/dev_sec_about" />
+                    <TextView android:id="@+id/dev_version_tv" android:textSize="13sp" android:tag="muted"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:paddingTop="6dp" android:paddingBottom="6dp" />
+                    <TextView android:id="@+id/dev_contact_tv" android:textSize="13sp" android:tag="muted"
+                        android:gravity="center_vertical" android:minHeight="40dp"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="@string/dev_contact" />
+                </LinearLayout>
+
+                <!-- 合并胶囊：92 × (40 + 1 + 40) = 81dp，贴在右侧、**Y 轴居中**
+                     （v1.10.441 用户截图：原来 top + marginTop=13dp，卡片被左侧文字列撑高，
+                      上方 23dp / 下方 14dp —— 明显偏上。改成 center_vertical 后上下各 8.5dp）。
+                     两格各自带**可见底色**（上格只圆上面两角、下格只圆下面两角）——
+                     上一版两格是 ghost_text 全透明，3D 倾斜只带动了几个字，难怪「依旧没出现」。
+                     clipChildren="false"：透视会把近端撑宽几像素，不关掉会被容器裁掉一条边。 -->
+                <LinearLayout android:id="@+id/dev_pill_stack" android:orientation="vertical"
+                    android:clipChildren="false" android:clipToPadding="false"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginEnd="16dp"
+                    android:layout_width="92dp" android:layout_height="81dp">
+                    <TextView android:id="@+id/dev_btn_about" android:textSize="13sp" android:tag="pill_half_top"
+                        android:gravity="center" android:clickable="true" android:focusable="true"
+                        android:layout_width="match_parent" android:layout_height="40dp"
+                        android:text="@string/dev_about_btn" />
+                    <View android:id="@+id/dev_pill_divider" android:tag="divider"
+                        android:layout_width="match_parent" android:layout_height="1dp" />
+                    <TextView android:id="@+id/dev_btn_copy" android:textSize="13sp" android:tag="pill_half_bottom"
+                        android:gravity="center" android:clickable="true" android:focusable="true"
+                        android:layout_width="match_parent" android:layout_height="40dp"
+                        android:text="@string/dev_copy_qq" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

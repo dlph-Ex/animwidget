@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:id="@id/preview_frame" android:background="@drawable/desk_bg" android:clipChildren="true" android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="1.0">
+        <ImageView android:id="@id/img_desk" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="centerCrop" android:contentDescription="@string/cfg_preview" />
+        <FrameLayout android:id="@id/preview_area" android:layout_width="fill_parent" android:layout_height="fill_parent">
+            <FrameLayout android:layout_gravity="center" android:id="@id/preview_box" android:layout_width="220.0dip" android:layout_height="140.0dip" android:foreground="@drawable/preview_outline">
+                <TextView android:textSize="12.0sp" android:textColor="#66707a9a" android:layout_gravity="center" android:id="@id/tv_preview_empty" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/section_preview" />
+                <ImageView android:id="@id/img_preview" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitXY" android:contentDescription="@string/cfg_preview" />
+            </FrameLayout>
+            <ProgressBar android:layout_gravity="center" android:id="@id/pb_preview" android:visibility="gone" android:layout_width="40.0dip" android:layout_height="40.0dip" />
+        </FrameLayout>
+    </FrameLayout>
+    <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="48.0dip" android:paddingStart="24.0dip" android:paddingEnd="24.0dip">
+        <TextView android:textSize="16.0sp" android:gravity="center" android:id="@id/tab_content" android:layout_width="0.0dip" android:layout_height="fill_parent" android:text="@string/tab_content" android:layout_weight="1.0" />
+        <TextView android:textSize="16.0sp" android:gravity="center" android:id="@id/tab_appearance" android:layout_width="0.0dip" android:layout_height="fill_parent" android:text="@string/section_look" android:layout_weight="1.0" />
+    </LinearLayout>
+    <View android:layout_gravity="start" android:id="@id/tab_indicator" android:background="#ff4f46e5" android:layout_width="120.0dip" android:layout_height="3.0dip" android:layout_marginStart="24.0dip" />
+    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginTop="1.0dip" />
+    <ScrollView android:clipToPadding="false" android:layout_width="fill_parent" android:layout_height="0.0dip" android:fillViewport="true" android:layout_weight="1.0" android:overScrollMode="never">
+        <LinearLayout android:orientation="vertical" android:paddingTop="4.0dip" android:paddingBottom="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+            <LinearLayout android:orientation="vertical" android:id="@id/ll_content" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_source" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <io.github.animwidget.MediaSelectorView android:id="@id/media_selector" android:layout_width="fill_parent" android:layout_height="52.0dip" android:layout_margin="10.0dip" />
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <Button android:textSize="14.0sp" android:id="@id/btn_adapt" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="46.0dip" android:layout_margin="8.0dip" android:text="@string/cfg_adapt_params" android:textAllCaps="false" />
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="13.0sp" android:id="@id/tv_pick" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_not_picked" />
+                        <TextView android:textSize="12.0sp" android:id="@id/tv_resolution" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" />
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout android:orientation="vertical" android:id="@id/ll_preview_section" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_preview" android:letterSpacing="0.06" />
+                    <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <LinearLayout android:orientation="vertical" android:paddingTop="10.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                            <SeekBar android:id="@id/seek_playback" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" />
+                            <TextView android:textSize="12.0sp" android:id="@id/tv_play_time" android:tag="muted" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="0:00.00" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout android:orientation="vertical" android:id="@id/ll_appearance" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_layout" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <TextView android:id="@id/ly0" android:tag="chip" style="@style/ShapeChip" />
+                        <TextView android:id="@id/ly1" android:tag="chip" style="@style/ShapeChip" />
+                        <TextView android:id="@id/ly2" android:tag="chip" style="@style/ShapeChip" />
+                        <TextView android:id="@id/ly3" android:tag="chip" style="@style/ShapeChip" />
+                    </LinearLayout>
+                    <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <TextView android:id="@id/ly4" android:tag="chip" style="@style/ShapeChip" />
+                        <TextView android:id="@id/ly5" android:tag="chip" style="@style/ShapeChip" />
+                        <TextView android:id="@id/ly6" android:tag="chip" style="@style/ShapeChip" />
+                        <TextView android:id="@id/ly7" android:tag="chip" style="@style/ShapeChip" />
+                    </LinearLayout>
+                </LinearLayout>
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_shape" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="46.0dip" android:layout_margin="4.0dip" android:paddingStart="14.0dip" android:paddingEnd="4.0dip">
+                        <Button android:textSize="14.0sp" android:id="@id/btn_fit_content" android:tag="ghost_text" android:background="@null" android:gravity="center_vertical|start" android:layout_width="0.0dip" android:layout_height="fill_parent" android:layout_weight="1.0" android:minWidth="0.0dip" android:minHeight="0.0dip" android:paddingStart="0.0dip" android:paddingEnd="0.0dip" android:text="@string/cfg_fit_on" android:textAllCaps="false" />
+                        <View android:tag="divider_soft" android:layout_width="1.0dip" android:layout_height="18.0dip" />
+                        <Button android:textSize="13.0sp" android:id="@+id/btn_fit_full" android:tag="ghost" android:background="@null" android:gravity="center" android:layout_width="wrap_content" android:layout_height="fill_parent" android:minWidth="0.0dip" android:minHeight="0.0dip" android:paddingStart="10.0dip" android:paddingEnd="10.0dip" android:text="完整适配" android:textAllCaps="false" />
+                    </LinearLayout>
+                    <LinearLayout android:orientation="vertical" android:id="@id/ll_shapes" android:paddingTop="4.0dip" android:paddingBottom="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" />
+                    <LinearLayout android:orientation="horizontal" android:padding="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                        <Button android:textSize="13.0sp" android:id="@id/btn_rotate" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="0.0dip" android:layout_height="42.0dip" android:text="@string/cfg_rotate_content_zero" android:layout_weight="1.0" android:textAllCaps="false" android:layout_marginEnd="6.0dip" />
+                        <Button android:textSize="13.0sp" android:id="@id/btn_rotate_shape" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="0.0dip" android:layout_height="42.0dip" android:text="@string/cfg_rotate_mask_zero" android:layout_weight="1.0" android:textAllCaps="false" android:layout_marginEnd="6.0dip" />
+                        <Button android:textSize="13.0sp" android:id="@id/btn_shapes_toggle" android:tag="pill_outline" android:background="@drawable/pill_outline" android:layout_width="0.0dip" android:layout_height="42.0dip" android:text="@string/cfg_all_shapes" android:layout_weight="1.0" android:textAllCaps="false" />
+                    </LinearLayout>
+                </LinearLayout>
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_picture" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_fps" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_fps" />
+                        <SeekBar android:id="@id/seek_fps" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="49" android:progress="11" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_edge" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_edge" />
+                        <SeekBar android:id="@id/seek_edge" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="305" android:progress="75" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_quality" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_quality" />
+                        <SeekBar android:id="@id/seek_quality" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="50" android:progress="40" />
+                    </LinearLayout>
+                </LinearLayout>
+                <TextView android:textSize="12.0sp" android:tag="section" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="18.0dip" android:layout_marginBottom="8.0dip" android:text="@string/section_look" android:letterSpacing="0.06" />
+                <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_alpha" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_alpha" />
+                        <SeekBar android:id="@id/seek_alpha" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="100" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_shadow" android:background="?android:selectableItemBackground" android:paddingTop="2.0dip" android:paddingBottom="2.0dip" android:focusable="true" android:clickable="true" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_shadow" />
+                        <SeekBar android:id="@id/seek_shadow" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="0" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <LinearLayout android:orientation="vertical" android:paddingTop="12.0dip" android:paddingBottom="14.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+                        <TextView android:textSize="14.0sp" android:id="@id/tv_scale" android:background="?android:selectableItemBackground" android:paddingTop="2.0dip" android:paddingBottom="2.0dip" android:focusable="true" android:clickable="true" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/cfg_scale" />
+                        <SeekBar android:id="@id/seek_scale" android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="100" android:progress="100" />
+                    </LinearLayout>
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <CheckBox android:textSize="14.0sp" android:id="@id/cb_border" android:layout_width="fill_parent" android:layout_height="50.0dip" android:text="@string/cfg_border" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" />
+                    <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+                    <CheckBox android:textSize="14.0sp" android:id="@id/cb_overlay" android:layout_width="fill_parent" android:layout_height="50.0dip" android:text="@string/cfg_overlay" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" />
+                    <CheckBox android:textSize="14.0sp" android:id="@id/cb_overlay_visible" android:layout_width="fill_parent" android:layout_height="50.0dip" android:text="@string/cfg_overlay_visible" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" />
+                    <Button android:textSize="13.0sp" android:id="@id/btn_overlay_edit" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="44.0dip" android:layout_margin="12.0dip" android:text="@string/cfg_content_gesture" android:textAllCaps="false" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+    <Button android:textSize="15.0sp" android:id="@id/btn_save" android:tag="primary" android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="54.0dip" android:layout_marginTop="6.0dip" android:layout_marginBottom="14.0dip" android:text="@string/cfg_save" android:textAllCaps="false" android:layout_marginStart="16.0dip" android:layout_marginEnd="16.0dip" />
+</LinearLayout>

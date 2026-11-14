@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_width="fill_parent" android:layout_height="fill_parent" android:fillViewport="true"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:padding="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="28.0sp" android:textStyle="bold" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/app_name" android:layout_weight="1.0" />
+            <Button android:textSize="18.0sp" android:id="@id/btn_settings" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="48.0dip" android:layout_height="48.0dip" android:text="⚙" />
+        </LinearLayout>
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="6.0dip" android:text="@string/intro" />
+        <Button android:textSize="15.0sp" android:id="@id/btn_add" android:tag="primary" android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="52.0dip" android:layout_marginTop="18.0dip" android:text="@string/main_add" />
+        <LinearLayout android:orientation="horizontal" android:tag="card" android:background="@drawable/card_bg" android:padding="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip">
+            <Button android:textSize="13.0sp" android:id="@id/btn_shizuku" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="0.0dip" android:layout_height="44.0dip" android:text="@string/main_shizuku" android:layout_weight="1.0" android:layout_marginEnd="6.0dip" />
+            <View android:tag="divider" android:layout_width="1.0dip" android:layout_height="fill_parent" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip" />
+            <Button android:textSize="13.0sp" android:id="@id/btn_battery" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="0.0dip" android:layout_height="44.0dip" android:text="@string/main_battery" android:layout_weight="1.0" />
+        </LinearLayout>
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:id="@id/tv_backend" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip" android:text="@string/main_backend_idle" />
+        <CheckBox android:id="@id/cb_anchor" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip" android:text="@string/main_anchor" />
+        <Button android:id="@id/btn_usage" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="48.0dip" android:layout_marginTop="16.0dip" android:text="@string/main_usage" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:id="@id/tv_desk_policy" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip" android:text="@string/main_desk_tip" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:id="@id/tv_diag" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" />
+        <Button android:textSize="15.0sp" android:id="@id/btn_toggle" android:tag="primary" android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="52.0dip" android:layout_marginTop="18.0dip" android:text="@string/main_stop" />
+        <TextView android:id="@id/tv_empty" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dip" android:text="@string/main_empty" />
+        <LinearLayout android:orientation="vertical" android:id="@id/ll_widgets" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="20.0dip" android:text="@string/notes" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:id="@id/color_root" android:paddingTop="14.0dip" android:paddingBottom="16.0dip" android:layout_width="fill_parent" android:layout_height="fill_parent" android:paddingStart="18.0dip" android:paddingEnd="18.0dip"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <TextView android:textSize="18.0sp" android:textStyle="bold" android:id="@id/color_title" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" />
+        <TextView android:textSize="18.0sp" android:gravity="center" android:id="@id/color_close" android:layout_width="36.0dip" android:layout_height="36.0dip" android:text="✕" android:contentDescription="@string/gesture_close" />
+    </LinearLayout>
+    <ScrollView android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_marginTop="12.0dip" android:layout_weight="1.0" android:overScrollMode="never">
+        <LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+                <View android:id="@id/color_preview" android:layout_width="56.0dip" android:layout_height="56.0dip" />
+                <EditText android:textSize="15.0sp" android:id="@id/color_hex" android:layout_width="0.0dip" android:layout_height="56.0dip" android:hint="@string/color_editor_hex_hint" android:maxLines="1" android:layout_weight="1.0" android:inputType="textCapCharacters" android:imeOptions="actionDone" android:paddingStart="14.0dip" android:paddingEnd="14.0dip" android:layout_marginStart="10.0dip" />
+                <TextView android:textSize="18.0sp" android:gravity="center" android:id="@id/color_copy" android:layout_width="42.0dip" android:layout_height="48.0dip" android:text="⧉" android:contentDescription="@string/color_editor_copy" />
+                <TextView android:textSize="18.0sp" android:gravity="center" android:id="@id/color_paste" android:layout_width="42.0dip" android:layout_height="48.0dip" android:text="⎘" android:contentDescription="@string/color_editor_paste" />
+            </LinearLayout>
+            <FrameLayout android:id="@id/color_picker_host" android:layout_width="fill_parent" android:layout_height="260.0dip" android:layout_marginTop="14.0dip" />
+            <TextView android:textSize="14.0sp" android:id="@id/color_variants_label" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="14.0dip" android:text="@string/color_editor_variants" />
+            <GridLayout android:id="@id/color_variants" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="6.0dip" android:rowCount="2" android:columnCount="6" />
+        </LinearLayout>
+    </ScrollView>
+    <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
+        <Button android:textSize="14.0sp" android:id="@id/color_cancel" android:layout_width="0.0dip" android:layout_height="50.0dip" android:text="@string/cfg_cancel" android:layout_weight="1.0" android:textAllCaps="false" android:layout_marginEnd="8.0dip" />
+        <Button android:textSize="14.0sp" android:id="@id/color_save" android:layout_width="0.0dip" android:layout_height="50.0dip" android:text="@string/color_editor_save" android:layout_weight="1.0" android:textAllCaps="false" />
+    </LinearLayout>
+</LinearLayout>

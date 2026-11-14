@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- v1.10.113（A 方案 / 预装帧）：6 个 ImageView 先装载好，之后每帧只发
+     「setDisplayedChild」这样一个几十字节的指令，不再每帧搬 880KB 位图。
+     RemoteViews 官方支持的布局里包含 ViewFlipper，控件里包含 ImageView。 -->
+<FrameLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ViewFlipper android:id="@+id/widget_flipper" android:layout_width="fill_parent" android:layout_height="fill_parent">
+        <ImageView android:id="@+id/flip_0" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/flip_1" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/flip_2" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/flip_3" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/flip_4" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/flip_5" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="@string/widget_desc" />
+    </ViewFlipper>
+</FrameLayout>

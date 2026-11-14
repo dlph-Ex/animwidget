@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="@drawable/card_surface"
+  android:padding="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="17.0sp" android:textStyle="bold" android:tag="exportTitle"
+      android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/log_export_title" />
+    <TextView android:textSize="12.0sp" android:tag="exportHint"
+      android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip"
+      android:lineSpacingExtra="2.0dip" android:text="@string/log_export_hint" />
+    <Button android:textSize="14.0sp" android:id="@+id/btn_export_txt" android:tag="primary"
+      android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="50.0dip"
+      android:layout_marginTop="18.0dip" android:text="@string/log_export_txt" android:textAllCaps="false" />
+    <Button android:textSize="13.0sp" android:id="@+id/btn_export_txt_open" android:tag="pill_outline"
+      android:background="@drawable/pill_outline" android:layout_width="fill_parent" android:layout_height="46.0dip"
+      android:layout_marginTop="8.0dip" android:text="@string/log_export_txt_open" android:textAllCaps="false" />
+    <Button android:textSize="14.0sp" android:id="@+id/btn_export_images" android:tag="pill_soft"
+      android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="50.0dip"
+      android:layout_marginTop="10.0dip" android:text="@string/log_export_images" android:textAllCaps="false" />
+</LinearLayout>

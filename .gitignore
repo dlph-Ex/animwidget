@@ -1,0 +1,19 @@
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+build-manual/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.keystore
+
+# v1.10.519：公开仓库不该带的东西（本地产物 / 编译工具链 / 反编译中间物 / 设备日志）
+dist/
+toolchain/
+recovered/
+logs-*/
+__pycache__/

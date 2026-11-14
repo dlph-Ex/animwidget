@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v1.10.490：**多格组件**（P0「6 路合成 1 个 host」）的布局。
+
+  为什么要它（外部三家一致、且是本机唯一有数学依据的杠杆）：
+    6 个独立组件 = 每秒 300 次 `updateAppWidget`。AOSP 语义下每个 host 只保留一个 in-flight
+    apply、新帧即 cancel，所以 6 路 50fps 的门槛是 `T_apply ≤ 1/(N·f) = 3.33ms`；
+    而 1 个组件里放 6 个 ImageView，apply 次数直接降到 50 次/秒，门槛回到 20ms。
+    纹理上传 1.106GB/s 一分不省（物理下限，6 个 ImageView 就是 6 份纹理）。
+
+  版式：2 行 × 3 列，等分。每一格一个 ImageView，`scaleType=centerCrop`，
+  与单格组件的观感口径一致（内容铺满格子，形状/阴影由帧自带的 alpha 决定）。
+-->
+<LinearLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+    android:orientation="vertical" android:baselineAligned="false"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout android:layout_width="fill_parent" android:layout_height="0.0dip"
+        android:layout_weight="1.0" android:orientation="horizontal" android:baselineAligned="false">
+        <ImageView android:id="@+id/widget_cell0" android:layout_width="0.0dip"
+            android:layout_height="fill_parent" android:layout_weight="1.0"
+            android:scaleType="centerCrop" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/widget_cell1" android:layout_width="0.0dip"
+            android:layout_height="fill_parent" android:layout_weight="1.0"
+            android:scaleType="centerCrop" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/widget_cell2" android:layout_width="0.0dip"
+            android:layout_height="fill_parent" android:layout_weight="1.0"
+            android:scaleType="centerCrop" android:contentDescription="@string/widget_desc" />
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="fill_parent" android:layout_height="0.0dip"
+        android:layout_weight="1.0" android:orientation="horizontal" android:baselineAligned="false">
+        <ImageView android:id="@+id/widget_cell3" android:layout_width="0.0dip"
+            android:layout_height="fill_parent" android:layout_weight="1.0"
+            android:scaleType="centerCrop" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/widget_cell4" android:layout_width="0.0dip"
+            android:layout_height="fill_parent" android:layout_weight="1.0"
+            android:scaleType="centerCrop" android:contentDescription="@string/widget_desc" />
+        <ImageView android:id="@+id/widget_cell5" android:layout_width="0.0dip"
+            android:layout_height="fill_parent" android:layout_weight="1.0"
+            android:scaleType="centerCrop" android:contentDescription="@string/widget_desc" />
+    </LinearLayout>
+</LinearLayout>

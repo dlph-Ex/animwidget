@@ -1,58 +1,72 @@
 # 帧工坊 / FrameSmith
 
 Turn **video / GIF / images** into live animated widgets on your Android home screen.
-Zero third-party dependencies. No network access. No data collection.
 
-把**视频 / 动图 / 图片**做成安卓桌面的动态组件。零第三方依赖，不联网，不收集任何数据。
+把**视频 / 动图 / 图片**做成安卓桌面的动态组件：每个组件独立配置素材、帧率、清晰度、蒙版形状、边框与阴影，多个组件互不影响。
 
 ## Download / 下载
 
-[Latest release / 最新版本](../../releases/latest)
+**仓库暂未发布安装包**（Releases 为空），目前只有源码。
 
-| Version | Size | SHA-256 |
-|---|---|---|
-| v1.10.358 | 6,614,600 bytes | `6a24c9a00152fb66174deddf229519e32091a6b7cb7f7e96b329173aadfc3ed7` |
+- 自己出包：见下方 [Build / 构建](#build--构建)，产物可直接安装；
+- 发布：等出包与验包流程稳定后再开 Releases，届时这里会写出版本号与 SHA-256。
 
-Requires Android 8.0+ (API 26). / 系统要求 Android 8.0 及以上。
+Requires Android 8.0+ (API 26). / 系统要求 Android 8.0 及以上（`minSdk 26` / `targetSdk 35`）。
 
 ## Install / 安装
 
-1. Download the `.apk` / 下载 APK
-2. Enable "install from unknown sources" for your browser or file manager
-   / 允许当前浏览器或文件管理器安装应用
-3. **vivo / iQOO**: a warning about missing ICP filing (备案) is expected —
-   tap **"Authorize this installation"**.
-   If "Pure Mode" (纯净模式) blocks it, disable it in `Settings → Security → Pure Mode`.
-   / vivo / iQOO 会提示「未备案」或「纯净模式拦截」，点「授权本次安装」；
-   若被纯净模式拦截，去 `设置 → 安全 → 纯净模式` 关闭。
+1. 拿到 `.apk`（自己构建，或从构建者处获取）/ get the `.apk`
+2. 允许当前浏览器或文件管理器「安装未知来源应用」/ enable "install from unknown sources"
+3. **vivo / iQOO**：会提示「未备案」，点「授权本次安装」；
+   若被「纯净模式」拦截，去 `设置 → 安全 → 纯净模式` 关闭。
+   A warning about missing ICP filing (备案) is expected — tap **"Authorize this installation"**.
 
 ## Features / 功能
 
-- Video ≤1080p / ≤50fps / ≤40s; GIF and still images supported
-  / 视频 ≤1080p、≤50fps、≤40s；支持动图与静态图
-- 48 shapes, shadow curves, borders, rotation, offset
-  / 48 种形状、阴影曲线、边框、旋转、偏移
-- "1:1" mode: preview = home screen = original resolution / frame rate / duration
-  / 「1:1」档：预览 = 桌面 = 原清晰度 / 原帧率 / 原时长
-- Widgets re-fit automatically after you resize them, without cropping
-  / 桌面组件拖动改尺寸后自动适配，不裁切画面
+- 视频 ≤1080p / ≤50fps / ≤40s；GIF 与静态图
+- **35 种蒙版形状**（方形 / 圆角 / 超椭圆 / 圆形 / 胶囊 / 菱形 / 三角 / 六边形 / 八边形 / 星形 / 心形 / 水滴 / 盾形 / 云 / 闪电 / 齿轮 / 太极 …），另支持阴影曲线、边框、整体旋转与偏移
+- 7 种布局档：原始比例 / 填充 / 16:9 / 4:3 / 1:1 / 9:16 / 21:9
+- 「1:1」档：预览 = 桌面 = 原清晰度 / 原帧率 / 原时长
+- 桌面组件拖动改尺寸后自动适配，不裁切画面
+- 素材导入即预览首帧；编辑页顶部按「整块显示区」对位显示当前壁纸
 
 ## Permissions / 权限
 
 | Permission | Why / 用途 | Optional? |
 |---|---|---|
-| `FOREGROUND_SERVICE` | per-frame widget delivery service / 组件逐帧投递服务 | No / 否 |
+| `FOREGROUND_SERVICE`<br>`FOREGROUND_SERVICE_SPECIAL_USE` | per-frame widget delivery service / 组件逐帧投递服务 | No / 否 |
 | `POST_NOTIFICATIONS` | playback status notification / 播放状态通知 | Yes / 可拒绝 |
 | `SYSTEM_ALERT_WINDOW` | only for the "adjust position" overlay / 仅「调整位置」功能 | Yes / 可拒绝 |
 | `PACKAGE_USAGE_STATS` | detect whether the launcher is in foreground, to pause when hidden / 判断桌面是否前台，不在则停播省电 | Yes / 可拒绝 |
-| `READ_MEDIA_IMAGES` | preview gallery when picking image assets / 选图片素材时预览相册 | Yes / 可拒绝 |
+| `READ_MEDIA_IMAGES`<br>`READ_EXTERNAL_STORAGE` (≤ Android 12) | pick and preview image/video assets / 选择与预览图片、视频素材 | Yes / 可拒绝 |
+| `INTERNET` | **只有**「关于」页点版本行时的更新检测：向 GitHub Releases API 发一次请求，取最新版本号比对 | 普通权限，无授权弹窗 |
 
-**No network access, no analytics, no ads, no data collection.**
-/ **本应用不联网、无统计 SDK、无广告、不收集任何数据。**
+**无统计 SDK、无广告、不上传任何数据。** 除上面那次「检测更新」之外，应用不会发起任何网络请求。
+/ **No analytics, no ads, no data upload.** The only network request is that update check, and only when you tap it.
+
+## Build / 构建
+
+本工程**不使用 Gradle**，出包是一条脚本：
+
+```bash
+./scripts/build-apk-src.sh <versionCode> <versionName>   # javac → aapt2 → d8 → zip → apksig（v2 签名）
+./scripts/verify-apk.sh dist/AnimWidget-v<versionName>.apk dist/AnimWidget-v<上一个>.apk
+```
+
+- 需要 JDK 17 与 `aapt2`；编译用的 `android-all.jar` / `d8.jar` / `kotlin-stdlib.jar` 等工具链放在 `toolchain/`，**不随仓库分发**；
+- `verify-apk.sh` 是 35 段静态门禁（清单↔dex、资源 id、字节码校验、主题结构、形状几何、若干纯数学自检等），结论行必须是 `OK`；
+- 产物是**自签名** APK（签名钥匙不在仓库内），所以首次安装需要允许「未知来源」。
+
+源码结构（重要）：**`src-v2/` 是唯一的源码树**，资源在 `patch-v1.4.0/res/`（名字是历史遗留），`tests/` 是纯 JDK 的自检。
+`app/` 下那套 Gradle 骨架与其中的 `.kt` 文件是早期遗留，**不参与出包**，读代码时不要从那里看。
 
 ## Feedback / 反馈
 
-Open an [issue](../../issues) with your device model, OS version, launcher name,
-and the diagnostic log exported from `Settings → Diagnostic log → Export`.
-/ 到 Issues 提，请附手机型号、系统版本、桌面名称，以及应用内
-`设置 → 诊断日志 → 导出` 生成的文件。
+Open an [issue](../../issues) with your device model, OS version, launcher name, and the diagnostic log exported from `Settings → Diagnostic log → Export`.
+/ 到 Issues 提，请附手机型号、系统版本、桌面名称，以及应用内 `设置 → 诊断日志 → 导出` 生成的文件。
+
+开发向文档见 `docs/`、`HANDOFF-*.md`、`LESSONS.md`（内部经验记录）与 `RECOVERY.md`。
+
+## License
+
+MIT — Copyright (c) 2026 AnimWidget contributors. 见 [LICENSE](LICENSE)。

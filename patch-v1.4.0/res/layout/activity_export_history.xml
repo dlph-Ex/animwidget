@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:layout_width="fill_parent"
+      android:layout_height="wrap_content" android:paddingTop="52.0dip" android:paddingBottom="8.0dip"
+      android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+        <TextView android:textSize="24.0sp" android:textStyle="bold" android:id="@+id/tv_export_history_title"
+          android:layout_width="0.0dip" android:layout_height="wrap_content"
+          android:text="@string/export_history_title" android:layout_weight="1.0" />
+        <Button android:textSize="13.0sp" android:id="@+id/btn_export_history_back" android:tag="pill_soft"
+          android:background="@drawable/pill_soft" android:layout_width="wrap_content" android:layout_height="42.0dip"
+          android:text="@string/log_close" android:textAllCaps="false" />
+    </LinearLayout>
+    <TextView android:textSize="12.0sp" android:id="@+id/tv_export_history_empty" android:tag="muted"
+      android:gravity="center" android:layout_width="fill_parent" android:layout_height="wrap_content"
+      android:layout_marginTop="40.0dip" android:text="@string/export_history_empty" />
+    <ScrollView android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="1.0"
+      android:overScrollMode="never" android:paddingStart="16.0dip" android:paddingEnd="16.0dip">
+        <LinearLayout android:orientation="vertical" android:id="@+id/ll_export_history"
+          android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingBottom="24.0dip" />
+    </ScrollView>
+</LinearLayout>

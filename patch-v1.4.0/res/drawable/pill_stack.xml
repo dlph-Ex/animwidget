@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- v1.10.359：「关于 / 复制 QQ」合并胶囊的外壳（竖向两格，中间 1dp 分隔由内部 View 画） -->
+<shape android:shape="rectangle" xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#ffeef0f4" />
+    <corners android:radius="18.0dip" />
+</shape>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v1.10.327：**初始布局 = 空白**（原来指向 widget_media，会先显示"应用图标 + 深色方块"的占位图）。
+
+  用户描述（v1.10.326 验证后仅剩的观感问题）：
+  「先拿了个 3x3 封面为应用图标的组件测了一下大小，素材画面才显示，整个过程不到一秒。」
+
+  这一拍是谁？launcher 加组件时先 inflate `initialLayout`，而它原来是真布局 + `widget_preview` 图
+  （深色方块 + 绿三角 ≈ 应用图标）。新组件还要等 launcher 把真实尺寸送过来（实测 0.3 秒左右），
+  这段时间桌面就挂着那张"像在测大小"的图标。
+
+  改成纯透明：等待期露出的是桌面壁纸本身，随后由我们推的第一帧直接接管。
+  代价：如果进程在这 0.3 秒里被系统杀掉，桌面会显示一块空白（`onUpdate` 到了仍会补推），
+  比"显示应用图标"少一点误导。
+-->
+<FrameLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:background="@android:color/transparent" />
