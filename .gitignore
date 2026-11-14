@@ -51,3 +51,11 @@ scripts/*
 !scripts/pack_apk.py
 !scripts/r8-rules.pro
 !scripts/sync-r.py
+
+# ---- 内置字体：不随仓库分发（构建时本地自备）----
+# v1.10.521：两个字体文件只留在工作区；缺失时 App 回退系统字体，不影响出包。
+# 赞赏二维码仍随仓库分发（res/ 里的两张是出包资源）。
+patch-v1.4.0/res/font/anim_dual.xml
+patch-v1.4.0/res/font/anim_dual_r.ttf
+patch-v1.4.0/res/font/anim_dual_sb.ttf
+app/src/main/res/drawable-nodpi/reward_qr.png

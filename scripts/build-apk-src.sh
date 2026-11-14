@@ -54,6 +54,7 @@ else
 fi
 
 echo "[4/5] pack + sign"
+mkdir -p "$ROOT/dist"
 python3 "$ROOT/scripts/pack_apk.py" "$OUT/unsigned.apk" "$OUT/res.apk" "$OUT/dex/classes.dex"
 java -cp "$APKSIG:$SIGNCLI" SignApk sign "$KS" android android androiddebugkey \
    "$OUT/unsigned.apk" "$ROOT/dist/AnimWidget-v$VN.apk"

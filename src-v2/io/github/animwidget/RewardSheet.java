@@ -122,6 +122,13 @@ public final class RewardSheet {
     private boolean qrPrefetched;
     private int qrPx;
 
+    /**
+     * 赞赏码是否真的在包里。两张码图不随仓库分发（避免公开分发收款码），
+     * 从源码自建且没有自己放入码图时资源不存在 —— 这时不展开码块，也不去解图，
+     * 免得 {@code setImageResource} 抛 NotFoundException 把整个弹层带崩。
+     */
+    private Boolean qrResOk;
+
     /** 宿主 Activity 的 content 视图（重截模糊底要用；detach 时清掉）。 */
     private ViewGroup parentContent;
 
@@ -1029,6 +1036,10 @@ public final class RewardSheet {
     // ---------------------------------------------------------------- 二维码预解码
 
     private void startQrPreload() {
+        if (!qrAvailable()) {
+            Diag.warn(this.host, "N03", "赞赏码不在包里（自建包未放入码图）→ 不预解码");
+            return;
+        }
         final long t0 = SystemClock.uptimeMillis();
         Thread worker = new Thread(() -> {
             Bitmap a = null;
@@ -1059,6 +1070,23 @@ public final class RewardSheet {
         }, "reward-qr-preload");
         worker.setDaemon(true);
         worker.start();
+    }
+
+    /** 两张码图在不在资源表里（自建包可能没有）。只查一次，结果缓存。 */
+    private boolean qrAvailable() {
+        Boolean cached = this.qrResOk;
+        if (cached != null) {
+            return cached;
+        }
+        boolean ok = true;
+        try {
+            this.host.getResources().getDrawable(R.drawable.reward_qr, this.host.getTheme());
+            this.host.getResources().getDrawable(R.drawable.reward_alipay, this.host.getTheme());
+        } catch (Throwable th) {
+            ok = false;
+        }
+        this.qrResOk = ok;
+        return ok;
     }
 
     private static String dim(Bitmap b) {
@@ -1094,14 +1122,24 @@ public final class RewardSheet {
             this.qrImage.setImageBitmap(bmp);
             return;
         }
-        this.qrImage.setImageResource(source == 1
-                ? R.drawable.reward_alipay : R.drawable.reward_qr);
-        Diag.warn(this.host, "N03", "赞赏码未预解码就用到 → 主线程兜底解码 来源=" + source);
+        try {
+            this.qrImage.setImageResource(source == 1
+                    ? R.drawable.reward_alipay : R.drawable.reward_qr);
+            Diag.warn(this.host, "N03", "赞赏码未预解码就用到 → 主线程兜底解码 来源=" + source);
+        } catch (Throwable th) {
+            // 自建包没放码图时资源不存在：置空即可，不崩。
+            this.qrImage.setImageDrawable(null);
+            this.qrResOk = Boolean.FALSE;
+        }
     }
 
     private void showQr(int source) {
         LinearLayout target = this.qrPanel;
         if (target == null) {
+            return;
+        }
+        if (!qrAvailable()) {
+            Diag.warn(this.host, "N03", "赞赏码不在包里（自建包未放入码图）→ 不展开");
             return;
         }
         boolean open = target.getVisibility() == View.VISIBLE;
