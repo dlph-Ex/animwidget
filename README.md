@@ -29,7 +29,7 @@
 
 **录屏：选素材 → 调参数 → 导出到桌面**
 
-![录屏：选素材、调参数、导出到桌面](images/demo-zh.gif)
+![录屏：选素材、调参数、导出到桌面](images/demo-zh.webp)
 
 ### 功能
 
@@ -168,7 +168,7 @@ MIT。Copyright (c) 2026 AnimWidget contributors。全文见 [LICENSE](LICENSE)�
 
 **Recording: pick media → tune settings → export to the home screen**
 
-![Recording: pick media, tune settings, export to the home screen](images/demo-en.gif)
+![Recording: pick media, tune settings, export to the home screen](images/demo-en.webp)
 
 ### Features
 
