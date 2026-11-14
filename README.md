@@ -12,21 +12,11 @@
 
 ### 界面
 
-三个页面各一张图，最后一段是从选素材到导出到桌面的录屏。
+**三个页面（左起：主页、开发者页、外观设置）**
 
-**主页**：组件清单、新建组件色带、运行环境
+![主页、开发者页、外观设置](images/zh-pages.jpg)
 
-![主页：组件清单、新建组件色带、运行环境](images/zh-main.jpg)
-
-**开发者页**：技术底座、调试入口、版本
-
-![开发者页：技术底座、调试入口、版本](images/zh-developer.jpg)
-
-**外观设置**：深浅色、配色方案、对比度、字体
-
-![外观设置：深浅色、配色方案、对比度、字体](images/zh-settings.jpg)
-
-**录屏**：选素材 → 调参数 → 导出到桌面
+**录屏：选素材 → 调参数 → 导出到桌面**
 
 ![录屏：选素材、调参数、导出到桌面](images/demo-zh.gif)
 
@@ -150,21 +140,11 @@ MIT。Copyright (c) 2026 AnimWidget contributors。全文见 [LICENSE](LICENSE)�
 
 ### Screenshots
 
-One image per page, then a short recording of the export flow.
+**Three pages (left to right: Home, Developer page, Appearance)**
 
-**Home**: widget list, New widget band, runtime checks
+![Home, Developer page, Appearance](images/en-pages.jpg)
 
-![Home: widget list, New widget band, runtime checks](images/en-main.jpg)
-
-**Developer page**: what's inside, debug entries, version
-
-![Developer page: what's inside, debug entries, version](images/en-developer.jpg)
-
-**Appearance**: theme, colour schemes, contrast, font
-
-![Appearance: theme, colour schemes, contrast, font](images/en-settings.jpg)
-
-**Recording**: pick media → tune settings → export to the home screen
+**Recording: pick media → tune settings → export to the home screen**
 
 ![Recording: pick media, tune settings, export to the home screen](images/demo-en.gif)
 
