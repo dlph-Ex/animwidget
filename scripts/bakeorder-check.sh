@@ -138,6 +138,41 @@ else
   ok=$((ok+1))
 fi
 
+# ---- 7) v1.10.520：**每个 bakeNow 调用点都必须接住返回值**
+# 根因（真机日志 Component_2608_35_10）：bitmap 直推档下 bakeNow 里 `!needUri` 直接 return（没起批次），
+# 而调用方照旧进 awaitBake 干等 → 进度定在 0/16、5 秒重开（还是跳过）、15 秒判停滞放行。
+# 判据：bakeNow 的返回值必须被赋值给一个 boolean，且马上有 `if (!xxx)` 的分支做收尾。
+naked=0
+while IFS=: read -r ln text; do
+  [ -z "$ln" ] && continue
+  if ! echo "$text" | grep -qE '=[[:space:]]*WidgetPrewarm\.bakeNow\('; then
+    echo "  第 $ln 行直接调 bakeNow 却没接返回值（批次没起也会被等）"; naked=$((naked+1))
+  fi
+done < <(grep -n "WidgetPrewarm\.bakeNow(" "$CFG")
+if [ "$naked" -eq 0 ]; then ok=$((ok+1)); else bad=$((bad+1)); fi
+
+# ---- 8) bakeAfterCommit：返回 false 必须直接收尾，不许进 awaitBake
+bac=$(line_of 'private void bakeAfterCommit')
+if [ -z "$bac" ]; then
+  echo "  找不到 bakeAfterCommit"; bad=$((bad+1))
+elif ! awk -v s="$bac" 'NR>s && NR<s+90 && /if \(!started\)/ {found=1} END {exit found?0:1}' "$CFG"; then
+  echo "  bakeAfterCommit 没有「批次没起就收尾」的分支（会卡在 0/n）"; bad=$((bad+1))
+elif ! awk -v s="$bac" 'NR>s && NR<s+90 && /finishSaveNow\(\)/ {found=1} END {exit found?0:1}' "$CFG"; then
+  echo "  bakeAfterCommit 的「批次没起」分支里没有 finishSaveNow()（页面不会自己收尾）"; bad=$((bad+1))
+else
+  ok=$((ok+1))
+fi
+
+# ---- 9) awaitBake 的重开分支：重开被拒时立刻放行（不许再等 15 秒的停滞判据）
+ab=$(line_of 'private void awaitBake')
+if [ -z "$ab" ]; then
+  echo "  找不到 awaitBake"; bad=$((bad+1))
+elif ! awk -v s="$ab" 'NR>s && NR<s+120 && /if \(!restarted\)/ {found=1} END {exit found?0:1}' "$CFG"; then
+  echo "  awaitBake 重开一批时没检查返回值（重开被拒会干等到 15 秒）"; bad=$((bad+1))
+else
+  ok=$((ok+1))
+fi
+
 if [ "$bad" -eq 0 ]; then
   echo "BAKEORDER OK $ok"
   exit 0

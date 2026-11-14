@@ -4547,7 +4547,19 @@ public final class ConfigActivity extends I18nActivity {
             // 的机型上读的就是这份缓存，于是回桌面算出的画布与这里逐像素相同，不会再重烘。
             WidgetRender.INSTANCE.freezeBoxFromRuntime(this, widgetId);
             showBakeProgress(0, total);
-            WidgetPrewarm.bakeNow(this, cfg, canvas[0], canvas[1], total);
+            boolean started = WidgetPrewarm.bakeNow(this, cfg, canvas[0], canvas[1], total);
+            if (!started) {
+                // v1.10.520（真机日志 Component_2608_35_10 的根因）：**下层主动跳过的批次，界面不许等它**。
+                // 这一台是「位图直推」档（不满足 needUri）→ bakeNow 立刻 return false，
+                // 而旧代码照样进 awaitBake：进度定在 0/16，5 秒后重开一批（还是跳过），
+                // 15 秒后判「停滞 → 放行 帧=0/0」，用户看到的就是「停在 0/n，过一会突然完成」。
+                Diag.warn(this, "W29", "提交后烘焙未开跑：本轮不走 URI 推帧（位图直推不需要烘帧）→ 直接收尾 组件="
+                        + widgetId);
+                if (uiAlive) {
+                    finishSaveNow();
+                }
+                return;
+            }
             if (uiAlive) {
                 // 用户口径（v1.10.443）："真正意义上一次导出、绝不再烘，等这一分钟没关系"。
                 // 所以页面留在这里，进度行就是「正在烘焙 x/y」，烘完才提示并关页。
@@ -5101,8 +5113,17 @@ public final class ConfigActivity extends I18nActivity {
                                     + widgetId + " 画布=" + canvasW + "x" + canvasH
                                     + " 帧=" + frames);
                             try {
-                                WidgetPrewarm.bakeNow(ConfigActivity.this, retryCfg,
+                                boolean restarted = WidgetPrewarm.bakeNow(ConfigActivity.this, retryCfg,
                                         canvasW, canvasH, frames);
+                                if (!restarted) {
+                                    // v1.10.520：重开也被拒（本轮本来就不走 URI 推帧）→ 立刻放行，
+                                    // 不再陪它等到 15 秒的「停滞」判据。
+                                    Diag.warn(ConfigActivity.this, "W29",
+                                            "等待烘焙：重开一批同样被跳过（不走 URI 推帧）→ 立即放行 组件="
+                                                    + widgetId);
+                                    endBakeWait();
+                                    return;
+                                }
                             } catch (Throwable ignored) {
                             }
                         }

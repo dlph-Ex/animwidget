@@ -199,7 +199,11 @@ public final class WallpaperBackdropView extends View {
                     + " 图左上=" + WallpaperPlacement.round(WallpaperPlacement.originX(bmp.getWidth(), disp[0], scale))
                     + "," + WallpaperPlacement.round(WallpaperPlacement.originY(bmp.getHeight(), disp[1], scale))
                     + " 预览=" + this.where[0] + "," + this.where[1] + " " + getWidth() + "x" + getHeight()
-                    + " 代号=" + id);
+                    + " 代号=" + id
+                    // v1.10.520（用户：「编辑页不是桌面本身壁纸」）：这一句是为了区分
+                    // 「读到的就是桌面那张」还是「读到了锁屏那张 / 桌面是动态壁纸（静态底图本来就不是屏上那张）」。
+                    + " 锁屏代号=" + lockId(getContext())
+                    + " 动态壁纸=" + (liveWallpaper(getContext()) ? "有" : "无"));
         } catch (Throwable ignored) {
         }
     }
@@ -239,6 +243,30 @@ public final class WallpaperBackdropView extends View {
             return WallpaperManager.getInstance(context).getWallpaperId(WallpaperManager.FLAG_SYSTEM);
         } catch (Throwable ignored) {
             return -1;
+        }
+    }
+
+    /** 锁屏壁纸代号（只用于 W56 诊断：桌面与锁屏不同壁纸时，这一对数会不一样）。 */
+    static int lockId(Context context) {
+        try {
+            return WallpaperManager.getInstance(context).getWallpaperId(WallpaperManager.FLAG_LOCK);
+        } catch (Throwable ignored) {
+            return -1;
+        }
+    }
+
+    /**
+     * 桌面是不是**动态壁纸**（v1.10.520）。
+     *
+     * <p>为什么值得单独记：桌面设成动态壁纸时，{@code getDrawable()} 给的是系统存的
+     * 静态底图（可能是主题自带的占位图），和屏上正在跑的那张未必是同一张 ——
+     * 用户口径「编辑页不是桌面本身壁纸」十有八九要落在这一格上。</p>
+     */
+    static boolean liveWallpaper(Context context) {
+        try {
+            return WallpaperManager.getInstance(context).getWallpaperInfo() != null;
+        } catch (Throwable ignored) {
+            return false;
         }
     }
 

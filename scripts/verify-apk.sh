@@ -365,7 +365,7 @@ echo "== [20] 导出收尾顺序与闸门（v1.10.452）"
 if bash "$ROOT/scripts/bakeorder-check.sh" > "$TMP/bakeorder.log" 2>&1 \
    && grep -q "^BAKEORDER OK" "$TMP/bakeorder.log"; then
   N20="$(grep -o 'BAKEORDER OK [0-9]*' "$TMP/bakeorder.log" | awk '{print $3}')"
-  echo "  OK（${N20} 条断言：提交先于烘焙 / 老路径已删 / bakeNow 必带帧数 / 三道闸门 / 帧文件判据 / 烘焙只用数字 x/y / save 闸门）"
+  echo "  OK（${N20} 条断言：提交先于烘焙 / 老路径已删 / bakeNow 必带帧数且必须接返回值 / 批次没起就收尾 / 重开被拒立刻放行 / 三道闸门 / 帧文件判据 / 烘焙只用数字 x/y / save 闸门）"
 else
   tail -20 "$TMP/bakeorder.log"
   echo "  导出收尾的顺序或闸门被改坏了（会重新变成「桌面没画面」）"

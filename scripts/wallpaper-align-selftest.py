@@ -87,7 +87,8 @@ def main():
         # 注意：要改的是**代码里的调用点**（.getWallpaperId(），不是注释里那个名字 ——
         # 上一版这里改到了注释，门禁保持绿色是正确行为（改注释当然不该红）。
         patch(os.path.join(tree, "src-v2/io/github/animwidget/WallpaperBackdropView.java"),
-              ".getWallpaperId(", ".getWallpaperIdXX(")
+              ".getWallpaperId(WallpaperManager.FLAG_SYSTEM)",
+              ".getWallpaperIdXX(WallpaperManager.FLAG_SYSTEM)")
 
     def mutate_keep_old_bitmap(tree):
         patch(os.path.join(tree, "src-v2/io/github/animwidget/WallpaperBackdropView.java"),

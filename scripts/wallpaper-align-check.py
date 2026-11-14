@@ -102,8 +102,10 @@ need(view.count("getDrawable()") == 1,
 need(re.search(r"POOL\.execute\(", view) is not None, "取图任务没有投到 pthread 池里")
 
 # E. 换壁纸的判据是「代号」，不是「看文件时间」
-need(re.search(r"\.getWallpaperId\(", view) is not None,
-     "WallpaperBackdropView 不再调用 getWallpaperId —— 换壁纸后会把旧图一直挂着")
+# 冻结在 FLAG_SYSTEM 这一条上：v1.10.520 起类里还有第二条 getWallpaperId(FLAG_LOCK) 只用于诊断，
+# 只查「有没有 getWallpaperId」会被它喂饱 —— 判缓存的必须**恰好**是系统那张。
+need(re.search(r"\.getWallpaperId\(\s*WallpaperManager\.FLAG_SYSTEM", view) is not None,
+     "WallpaperBackdropView 不再按 getWallpaperId(FLAG_SYSTEM) 判缓存 —— 换壁纸后会把旧图一直挂着")
 
 # F. 换过壁纸要先撤旧图（判据 B：1 帧内不再显示旧壁纸）
 reload = body(view, "public final void reload()")

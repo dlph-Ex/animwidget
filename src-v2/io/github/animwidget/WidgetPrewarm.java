@@ -354,9 +354,9 @@ public final class WidgetPrewarm {
      * 所以这里把两道闸门都绕开；代次生成、BUSY 占位、作废旧批次、按目标质量直出、
      * 写"这一代已烘过"标记，全部沿用 {@link #start} / {@link #bakeBody} 的原路径。
      */
-    public static void bakeNow(@NotNull Context context, @NotNull WidgetConfig config,
-                               int width, int height) {
-        bakeNow(context, config, width, height, 0);
+    public static boolean bakeNow(@NotNull Context context, @NotNull WidgetConfig config,
+                                  int width, int height) {
+        return bakeNow(context, config, width, height, 0);
     }
 
     /**
@@ -366,20 +366,26 @@ public final class WidgetPrewarm {
      * 配置副本，那时 `frameCount` 还是 0（帧数是导出完成后才有的）。而 `bake()` 第一件事就是
      * `if (count <= 0) return;` —— **静默返回**。所以 11:49:40 之后 61 秒里既没有 W13、
      * 也没有"代次已变"，进度永远 0/235（用户："等待进度条消失，然后没有任何反应"）。
+     *
+     * <p>v1.10.520：**返回值是这个方法对调用方的唯一承诺** —— true = 批次真的起了线程。
+     * 以前它返回 void，而下面两条「跳过」分支是静默 return，于是 `ConfigActivity.bakeAfterCommit`
+     * 会照旧进 `awaitBake()` 干等一个**永远不会有的批次**：真机日志里就是
+     * `0/16` 卡 15 秒 → `烘焙停滞 15 秒且无批次在跑 → 放行 帧=0/0`，用户看到的是
+     * 「一直停在 0/n，过一会又突然完成了」。</p>
      */
-    public static void bakeNow(@NotNull Context context, @NotNull WidgetConfig config,
-                               int width, int height, int frames) {
+    public static boolean bakeNow(@NotNull Context context, @NotNull WidgetConfig config,
+                                  int width, int height, int frames) {
         if (width <= 0 || height <= 0) {
             Diag.warn(context, "W29", "导出即烘跳过：画布无效 " + width + "x" + height);
-            return;
+            return false;
         }
         if (!WidgetRender.needUri(context, config)) {
             Diag.warn(context, "W29", "导出即烘跳过：当前不走 URI 推送（静态图/档位 0）");
-            return;
+            return false;
         }
         if (frames <= 0 && config.getFrameCount() <= 0) {
             Diag.warn(context, "W29", "导出即烘跳过：帧数为 0（config=0，result=0）");
-            return;
+            return false;
         }
         // v1.10.450：**必须用"帧数已经写对"的配置去烘**。
         // 导出链传进来的 snapshot 是导出开始那一刻的副本（frameCount=0），而
@@ -401,6 +407,7 @@ public final class WidgetPrewarm {
             READY.put(id, stamp);
         }
         start(context, cfg, width, height, stamp, frames);
+        return true;
     }
 
     /** v1.10.450：复制一份配置、只把 frameCount 换成导出真实帧数（其余逐字段照抄）。 */
