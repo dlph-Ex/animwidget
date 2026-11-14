@@ -12,13 +12,19 @@
 
 ### 界面
 
+主页、开发者页、外观设置三张截图，最后一段是从选素材到导出组件的录屏。
+
 <table>
 <tr>
-<td align="center"><img src="images/app-main.jpg" width="290" alt="主页：组件清单与新建组件色带"><br><sub>主页</sub></td>
-<td align="center"><img src="images/app-developer.jpg" width="290" alt="开发者页：名片与调试入口"><br><sub>开发者页</sub></td>
+<td align="center"><img src="images/zh-main.jpg" width="240" alt="主页：组件清单、新建组件色带、运行环境"><br><sub>主页：组件清单、新建组件色带、运行环境</sub></td>
+<td align="center"><img src="images/zh-developer.jpg" width="240" alt="开发者页：技术底座、调试入口、版本"><br><sub>开发者页：技术底座、调试入口、版本</sub></td>
+<td align="center"><img src="images/zh-settings.jpg" width="240" alt="外观设置：深浅色、配色方案、对比度、字体"><br><sub>外观设置：深浅色、配色、对比度、字体</sub></td>
 </tr>
 </table>
 
+<img src="images/demo-zh.gif" width="280" alt="录屏：选素材、调参数、导出到桌面">
+
+录屏顺序：选素材 → 调参数 → 导出到桌面。
 
 ### 功能
 
@@ -140,13 +146,19 @@ MIT。Copyright (c) 2026 AnimWidget contributors。全文见 [LICENSE](LICENSE)�
 
 ### Screenshots
 
+Three pages and a short recording of the export flow.
+
 <table>
 <tr>
-<td align="center"><img src="images/app-main.jpg" width="290" alt="Home screen: widget list and the New widget band"><br><sub>Home</sub></td>
-<td align="center"><img src="images/app-developer.jpg" width="290" alt="Developer page: creator card and debug entries"><br><sub>Developer page</sub></td>
+<td align="center"><img src="images/en-main.jpg" width="240" alt="Home: widget list, New widget band, runtime checks"><br><sub>Home: widget list, New widget band, runtime checks</sub></td>
+<td align="center"><img src="images/en-developer.jpg" width="240" alt="Developer page: what's inside, debug entries, version"><br><sub>Developer page: what's inside, debug entries, version</sub></td>
+<td align="center"><img src="images/en-settings.jpg" width="240" alt="Appearance: theme, colour schemes, contrast, font"><br><sub>Appearance: theme, colour schemes, contrast, font</sub></td>
 </tr>
 </table>
 
+<img src="images/demo-en.gif" width="280" alt="Recording: pick media, tune settings, export to the home screen">
+
+Recording: pick media → tune settings → export to the home screen.
 
 ### Features
 
