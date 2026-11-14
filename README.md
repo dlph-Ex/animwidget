@@ -25,14 +25,14 @@ Turn videos, GIFs and still images into live widgets on your Android home screen
 
 | 版本 / Version | 体积 / Size | SHA-256 |
 |---|---|---|
-| v1.10.520 | 6,836,005 bytes（约 6.5 MiB） | `824fe9ccd11f149498313b5153f1951a267a0f92fd707464615121b28c68ec78` |
+| v1.10.521 | 6,836,005 bytes（约 6.5 MiB） | `1fcb8dd707b2552c750b038fff4b67cf08db64b1c81ba7f4b5f304b36435804d` |
 
-- 直接下载 / Direct download：<https://github.com/dlph-Ex/animwidget/releases/download/v1.10.520/AnimWidget-v1.10.520.apk>
+- 直接下载 / Direct download：<https://github.com/dlph-Ex/animwidget/releases/download/v1.10.521/AnimWidget-v1.10.521.apk>
 - 全部版本 / All releases：<https://github.com/dlph-Ex/animwidget/releases>
 
 系统要求 / Requirements：Android 8.0 及以上（API 26），targetSdk 35。
 
-校验下载 / Verify the download：`sha256sum AnimWidget-v1.10.520.apk`，结果应与上表一致。/ Run `sha256sum AnimWidget-v1.10.520.apk` and compare it with the table above.
+校验下载 / Verify the download：`sha256sum AnimWidget-v1.10.521.apk`，结果应与上表一致。/ Run `sha256sum AnimWidget-v1.10.521.apk` and compare it with the table above.
 
 发行证书 SHA-256：安装后在应用内「关于 → 签名证书」即可核对。/ Release certificate SHA-256 — check it in the app under "About → Signing cert".
 
@@ -40,7 +40,7 @@ Turn videos, GIFs and still images into live widgets on your Android home screen
 
 ## 安装 / Install
 
-1. 下载 `AnimWidget-v1.10.520.apk`。/ Download `AnimWidget-v1.10.520.apk`.
+1. 下载 `AnimWidget-v1.10.521.apk`。/ Download `AnimWidget-v1.10.521.apk`.
 2. 允许浏览器或文件管理器「安装未知来源应用」。/ Allow your browser or file manager to install unknown apps.
 3. **vivo / iQOO**：会提示「未备案」，点「授权本次安装」；若被「纯净模式」拦截，到 `设置 → 安全 → 纯净模式` 关闭后再装。/ A missing-ICP-filing warning is expected — tap "Authorize this installation". If Pure Mode blocks it, turn Pure Mode off under `Settings → Security → Pure Mode`.
 4. 安装后打开应用，点「＋ 新建组件」按提示添加到桌面。/ Open the app and tap "＋ New widget" to add it to the home screen.
@@ -84,10 +84,10 @@ Turn videos, GIFs and still images into live widgets on your Android home screen
 出包不使用 Gradle，一条脚本：/ The build does not use Gradle — it is one script:
 
 ```bash
-./scripts/build-apk-src.sh 634 1.10.520   # javac → aapt2 → d8 → 打包 → apksig（v2 签名）
+./scripts/build-apk-src.sh 635 1.10.521   # javac → aapt2 → d8 → 打包 → apksig（v2 签名）
 ```
 
-产物 / Output：`dist/AnimWidget-v1.10.520.apk`。
+产物 / Output：`dist/AnimWidget-v1.10.521.apk`。
 
 - 需要 JDK 17、`aapt2` 与 Python 3。/ Needs JDK 17, `aapt2` and Python 3.
 - 工具链 jar（`android-all.jar`、`jdk-core-stubs.jar`、`r8.jar`、`apksig.jar`、`signapk-cli.jar`、`kotlin-stdlib.jar`、`annotations-13.0.jar`、`shizuku-all.jar`、`shizuku-aidl.jar`、`core-lambda-stubs.jar`）放在 `toolchain/`，不随仓库分发；可用 `TOOLCHAIN=/path` 指定。/ Toolchain jars (`android-all.jar`, `jdk-core-stubs.jar`, `r8.jar`, `apksig.jar`, `signapk-cli.jar`, `kotlin-stdlib.jar`, `annotations-13.0.jar`, `shizuku-all.jar`, `shizuku-aidl.jar`, `core-lambda-stubs.jar`) live in `toolchain/` and are not shipped; override with `TOOLCHAIN=/path`.
