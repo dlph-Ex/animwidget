@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<appwidget-provider android:minWidth="110.0dip" android:minHeight="110.0dip" android:updatePeriodMillis="0" android:initialLayout="@layout/widget_media" android:configure="io.github.animwidget.ConfigActivity" android:previewImage="@drawable/ic_launcher" android:resizeMode="horizontal|vertical" android:minResizeWidth="60.0dip" android:minResizeHeight="60.0dip" android:widgetCategory="home_screen" android:targetCellWidth="3" android:targetCellHeight="3"
-  xmlns:android="http://schemas.android.com/apk/res/android" />

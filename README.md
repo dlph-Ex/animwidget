@@ -51,14 +51,13 @@ Requires Android 8.0+ (API 26) / 系统要求 Android 8.0 及以上（`minSdk 26
 
 ```bash
 ./scripts/build-apk-src.sh <versionCode> <versionName>   # javac → aapt2 → d8 → zip → apksig（v2 签名）
-./scripts/verify-apk.sh dist/AnimWidget-v<versionName>.apk dist/AnimWidget-v<上一个>.apk
 ```
 
 - 需要 JDK 17 与 `aapt2`；编译用的 `android-all.jar` / `d8.jar` / `kotlin-stdlib.jar` 等工具链放在 `toolchain/`，**不随仓库分发**；
-- `verify-apk.sh` 是 35 段静态门禁（清单↔dex、资源 id、字节码校验、主题结构、形状几何、若干纯数学自检等），结论行必须是 `OK`；
-- 产物是**自签名** APK（签名钥匙不在仓库内），所以首次安装需要允许「未知来源」。
+- 产物是**自签名** APK（签名钥匙不在仓库内），所以首次安装需要允许「未知来源」；
+- 静态门禁（`verify-apk.sh` 与各 `*-check`）、自检（`tests/`）与过程记录保存在维护者本地，**不随仓库分发**，仓库里只有出包必需的脚本。
 
-源码结构（重要）：**`src-v2/` 是唯一的源码树**，资源在 `patch-v1.4.0/res/`（名字是历史遗留），`tests/` 是纯 JDK 的自检。
+源码结构（重要）：**`src-v2/` 是唯一的源码树**，资源与清单在 `patch-v1.4.0/`（目录名是历史遗留，实际就是当前这一代的 `res/` + `AndroidManifest.xml` + `stable-ids.txt`）。
 `app/` 下那套 Gradle 骨架与其中的 `.kt` 文件是早期遗留，**不参与出包**，读代码时不要从那里看。
 
 ## Sponsor / 赞赏
@@ -74,8 +73,6 @@ Requires Android 8.0+ (API 26) / 系统要求 Android 8.0 及以上（`minSdk 26
 
 Open an [issue](../../issues) with your device model, OS version, launcher name, and the diagnostic log exported from `Settings → Diagnostic log → Export`.
 / 到 Issues 提，请附手机型号、系统版本、桌面名称，以及应用内 `设置 → 诊断日志 → 导出` 生成的文件。
-
-开发向文档见 `docs/`、`HANDOFF-*.md`、`LESSONS.md`（内部经验记录）与 `RECOVERY.md`。
 
 ## License
 

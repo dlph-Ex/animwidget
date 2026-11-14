@@ -1,3 +1,4 @@
+# ---- 构建/本地环境 ----
 *.iml
 .gradle/
 local.properties
@@ -10,3 +11,43 @@ captures/
 .cxx/
 *.apk
 *.keystore
+
+# ---- 大件与产物（不进仓库）----
+dist/
+toolchain/
+recovered/
+logs-*/
+__pycache__/
+*.pyc
+javac*.args
+
+# ---- 过程记录：只留在工作区，不推仓库（v1.10.521 起）----
+HANDOFF-*.md
+REVIEW-*.md
+RECOVERY*.md
+RELEASE-*.md
+*REPORT*.md
+*ASSESSMENT*.md
+*BRIEF*.md
+PLAN-*.md
+*PLAN*.md
+LESSONS.md
+PREVIEW.md
+PUBLISH-*.md
+SECURITY-*.md
+MASK-*.md
+
+# ---- 测试 / 调试产物 ----
+patch-v1.3.*/
+docs/
+tests/
+docs-*.png
+preview-fix.png
+*.orig.png
+
+# ---- scripts/：只保留出包必需的 4 个，其余（门禁/自检/一次性工具）本地保留 ----
+scripts/*
+!scripts/build-apk-src.sh
+!scripts/pack_apk.py
+!scripts/r8-rules.pro
+!scripts/sync-r.py
