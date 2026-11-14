@@ -6,12 +6,13 @@ Turn **video / GIF / images** into live animated widgets on your Android home sc
 
 ## Download / 下载
 
-**仓库暂未发布安装包**（Releases 为空），目前只有源码。
+| Version | Size | SHA-256 |
+|---|---|---|
+| [v1.10.520](https://github.com/dlph-Ex/animwidget/releases/latest) | 6,836,005 bytes | `824fe9ccd11f149498313b5153f1951a267a0f92fd707464615121b28c68ec78` |
 
-- 自己出包：见下方 [Build / 构建](#build--构建)，产物可直接安装；
-- 发布：等出包与验包流程稳定后再开 Releases，届时这里会写出版本号与 SHA-256。
+Requires Android 8.0+ (API 26) / 系统要求 Android 8.0 及以上（`minSdk 26` / `targetSdk 35`）。
 
-Requires Android 8.0+ (API 26). / 系统要求 Android 8.0 及以上（`minSdk 26` / `targetSdk 35`）。
+也可以自己出包：见下方 [Build / 构建](#build--构建)。
 
 ## Install / 安装
 
