@@ -16,6 +16,17 @@
 
 ![主页、开发者页、外观设置](images/zh-pages.jpg)
 
+<details>
+<summary>逐张查看</summary>
+
+![主页：组件清单、新建组件色带、运行环境](images/zh-1-home.jpg)
+
+![开发者页：技术底座、调试入口、版本](images/zh-2-dev.jpg)
+
+![外观设置：深浅色、配色方案、对比度、字体](images/zh-3-theme.jpg)
+
+</details>
+
 **录屏：选素材 → 调参数 → 导出到桌面**
 
 ![录屏：选素材、调参数、导出到桌面](images/demo-zh.gif)
@@ -143,6 +154,17 @@ MIT。Copyright (c) 2026 AnimWidget contributors。全文见 [LICENSE](LICENSE)�
 **Three pages (left to right: Home, Developer page, Appearance)**
 
 ![Home, Developer page, Appearance](images/en-pages.jpg)
+
+<details>
+<summary>View one by one</summary>
+
+![Home: widget list, New widget band, runtime checks](images/en-1-home.jpg)
+
+![Developer page: what's inside, debug entries, version](images/en-2-dev.jpg)
+
+![Appearance: theme, colour schemes, contrast, font](images/en-3-theme.jpg)
+
+</details>
 
 **Recording: pick media → tune settings → export to the home screen**
 
