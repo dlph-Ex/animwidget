@@ -60,6 +60,17 @@ Requires Android 8.0+ (API 26). / 系统要求 Android 8.0 及以上（`minSdk 2
 源码结构（重要）：**`src-v2/` 是唯一的源码树**，资源在 `patch-v1.4.0/res/`（名字是历史遗留），`tests/` 是纯 JDK 的自检。
 `app/` 下那套 Gradle 骨架与其中的 `.kt` 文件是早期遗留，**不参与出包**，读代码时不要从那里看。
 
+## Sponsor / 赞赏
+
+完全自愿，不影响任何功能。
+
+| Ko-fi | 微信 / WeChat | 支付宝 / Alipay |
+|---|---|---|
+| [ko-fi.com/frost_doplhin](https://ko-fi.com/frost_doplhin) | <img src="assets/sponsor/wechat.png" width="190" alt="微信赞赏码"> | <img src="assets/sponsor/alipay.png" width="190" alt="支付宝收款码"> |
+| overseas / 海外 | 微信扫一扫 | 支付宝扫一扫 |
+
+<!-- 这两张与 patch-v1.4.0/res/drawable-nodpi-v4/reward_qr.png、reward_alipay.png 是同一份（应用内赞赏弹层用的就是它们） -->
+
 ## Feedback / 反馈
 
 Open an [issue](../../issues) with your device model, OS version, launcher name, and the diagnostic log exported from `Settings → Diagnostic log → Export`.
