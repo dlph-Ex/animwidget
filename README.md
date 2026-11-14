@@ -64,12 +64,10 @@ Requires Android 8.0+ (API 26). / 系统要求 Android 8.0 及以上（`minSdk 2
 
 完全自愿，不影响任何功能。
 
-| Ko-fi | 微信 / WeChat | 支付宝 / Alipay |
-|---|---|---|
-| [ko-fi.com/frost_doplhin](https://ko-fi.com/frost_doplhin) | <img src="assets/sponsor/wechat.png" width="190" alt="微信赞赏码"> | <img src="assets/sponsor/alipay.png" width="190" alt="支付宝收款码"> |
-| overseas / 海外 | 微信扫一扫 | 支付宝扫一扫 |
+- Ko-fi：<https://ko-fi.com/frost_doplhin>
+- 微信 / 支付宝：在应用内「关于 → 赞赏」里直接扫码（收款码只随应用分发，不在仓库里）
 
-<!-- 这两张与 patch-v1.4.0/res/drawable-nodpi-v4/reward_qr.png、reward_alipay.png 是同一份（应用内赞赏弹层用的就是它们） -->
+<!-- 应用内赞赏弹层用的就是 res/drawable-nodpi-v4/reward_qr.png 与 reward_alipay.png；v1.10.520 起这两张不再复制到仓库 -->
 
 ## Feedback / 反馈
 
