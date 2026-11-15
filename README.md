@@ -47,22 +47,37 @@
 
 | 版本 | 体积 | SHA-256 |
 |---|---|---|
-| v1.10.521 | 6,836,005 bytes（约 6.5 MiB） | `1fcb8dd707b2552c750b038fff4b67cf08db64b1c81ba7f4b5f304b36435804d` |
+| v1.10.538 | 6,860,581 bytes（约 6.5 MiB） | `161d69dd3c0d2530b46dd1a8753acf16953ee1d8f7d606ab89a544e66dfad2e6` |
 
-- 直接下载：<https://github.com/dlph-Ex/animwidget/releases/download/v1.10.521/AnimWidget-v1.10.521.apk>
+- 直接下载：<https://github.com/dlph-Ex/animwidget/releases/download/v1.10.538/AnimWidget-v1.10.538.apk>
 - 全部版本：<https://github.com/dlph-Ex/animwidget/releases>
 
 系统要求：Android 8.0 及以上（API 26），targetSdk 35。
 
-校验下载：`sha256sum AnimWidget-v1.10.521.apk`，结果应与上表一致。
+校验下载：`sha256sum AnimWidget-v1.10.538.apk`，结果应与上表一致。
 
 发行证书 SHA-256：安装后在应用内「关于 → 签名证书」即可核对。
 
 `5E:9B:78:5C:93:2E:49:AD:62:1E:BE:FB:31:FB:14:66:59:2F:A9:62:88:29:55:A6:9C:EB:89:5D:04:EE:F4:D3`
 
+### 本版改动
+
+**v1.10.538**
+
+- 预览虚线框改由独立图层自绘：换布局时按 `cubic-bezier(0.22, 1, 0.36, 1)` 在 300–450ms 内平滑形变，连续快切从当前位置续走，不闪、不重置、不断档。
+- 虚线框只跟随布局：素材比例、画面位移、画面缩放、旋转、阴影都不再改变框的位置与大小；画面始终在框内。
+- 固定比例（16:9 / 4:3 / 1:1 / 9:16 / 21:9）下「适配画面」可切换：开＝完整显示不裁切；关＝裁切填满，画面贴满框、四周间距 1dp。
+- 形状蒙版改为三行一列、横向滑动，不再有「展开 / 收起」两态。
+- 分组圆角统一为外侧 18dp、相邻内侧 8dp（性能卡 14/6，按钮组间距 2dp）；布局卡片、开发者页按钮分行同规则。
+- 比例卡配色重做：选中为主色混白，未选中为系统控件色，箭头墨色随底色明暗切换。
+- 设置页新增返回按钮：40dp 圆底、48dp 热区，按下缩小并叠 18% 状态层，松手回弹。
+- 设置页底部补位改为高度过渡（240ms），开关折叠时不再硬跳。
+- 编辑页「动图分辨率」只显示当前档位的说明，改档即时刷新。
+- 日志新增「预览形变」记录（判断代号 W54）：换布局时一行给出旧→新的框尺寸与时长，用于核对形变是否按预期发生。
+
 ### 安装
 
-1. 下载 `AnimWidget-v1.10.521.apk`。
+1. 下载 `AnimWidget-v1.10.538.apk`。
 2. 允许浏览器或文件管理器「安装未知来源应用」。
 3. **vivo / iQOO**：会提示「未备案」，点「授权本次安装」；若被「纯净模式」拦截，到 `设置 → 安全 → 纯净模式` 关闭后再装。
 4. 安装后打开应用，点「＋ 新建组件」按提示添加到桌面。
@@ -105,10 +120,10 @@
 出包不使用 Gradle，一条脚本：
 
 ```bash
-./scripts/build-apk-src.sh 635 1.10.521   # javac → aapt2 → d8 → 打包 → apksig（v2 签名）
+./scripts/build-apk-src.sh 652 1.10.538   # javac → aapt2 → d8 → 打包 → apksig（v2 签名）
 ```
 
-产物：`dist/AnimWidget-v1.10.521.apk`。
+产物：`dist/AnimWidget-v1.10.538.apk`。
 
 - 需要 JDK 17、`aapt2` 与 Python 3。
 - 工具链 jar（`android-all.jar`、`jdk-core-stubs.jar`、`r8.jar`、`apksig.jar`、`signapk-cli.jar`、`kotlin-stdlib.jar`、`annotations-13.0.jar`、`shizuku-all.jar`、`shizuku-aidl.jar`、`core-lambda-stubs.jar`）放在 `toolchain/`，不随仓库分发；可用 `TOOLCHAIN=/path` 指定。
@@ -186,22 +201,37 @@ MIT。Copyright (c) 2026 AnimWidget contributors。全文见 [LICENSE](LICENSE)�
 
 | Version | Size | SHA-256 |
 |---|---|---|
-| v1.10.521 | 6,836,005 bytes (~6.5 MiB) | `1fcb8dd707b2552c750b038fff4b67cf08db64b1c81ba7f4b5f304b36435804d` |
+| v1.10.538 | 6,860,581 bytes (~6.5 MiB) | `161d69dd3c0d2530b46dd1a8753acf16953ee1d8f7d606ab89a544e66dfad2e6` |
 
-- Direct download: <https://github.com/dlph-Ex/animwidget/releases/download/v1.10.521/AnimWidget-v1.10.521.apk>
+- Direct download: <https://github.com/dlph-Ex/animwidget/releases/download/v1.10.538/AnimWidget-v1.10.538.apk>
 - All releases: <https://github.com/dlph-Ex/animwidget/releases>
 
 Requirements: Android 8.0+ (API 26), targetSdk 35.
 
-Verify: run `sha256sum AnimWidget-v1.10.521.apk` and compare it with the table above.
+Verify: run `sha256sum AnimWidget-v1.10.538.apk` and compare it with the table above.
 
 Release certificate SHA-256 — check it in the app under "About → Signing cert":
 
 `5E:9B:78:5C:93:2E:49:AD:62:1E:BE:FB:31:FB:14:66:59:2F:A9:62:88:29:55:A6:9C:EB:89:5D:04:EE:F4:D3`
 
+### What's new
+
+**v1.10.538**
+
+- The preview dashed frame is now drawn by its own overlay layer. Changing the layout morphs it over 300–450ms with `cubic-bezier(0.22, 1, 0.36, 1)`; rapid switches continue from the current rectangle instead of restarting.
+- The frame follows the layout only: media aspect, content offset, content zoom, rotation and shadow no longer move or resize it, and the picture always stays inside.
+- For fixed ratios (16:9 / 4:3 / 1:1 / 9:16 / 21:9) the "fit content" switch works both ways: on keeps the whole picture visible, off crops to fill — the picture then fills the frame with a 1dp gap on all four sides.
+- Shape masks are now three rows that scroll sideways, replacing the old expand/collapse state.
+- Grouped corner radii are unified: 18dp on the outer edge, 8dp between adjacent rows (14/6 on the performance card, 2dp spacing inside button groups).
+- Ratio cards use new colours: primary tinted with white when selected, the system control colour otherwise, with ink that flips with the background.
+- The settings page gains a back button: 40dp circle in a 48dp touch target, 90% press scale with an 18% state layer, springing back on release.
+- The settings page bottom spacer animates its height (240ms) instead of jumping when a group collapses.
+- The animation-resolution row in the editor shows only the hint for the selected tier and refreshes on change.
+- New log entry "preview morph" (code W54): one line per layout change with the old and new frame sizes and the duration.
+
 ### Install
 
-1. Download `AnimWidget-v1.10.521.apk`.
+1. Download `AnimWidget-v1.10.538.apk`.
 2. Allow your browser or file manager to install unknown apps.
 3. **vivo / iQOO**: a missing-ICP-filing warning is expected — tap "Authorize this installation". If Pure Mode blocks it, turn Pure Mode off under `Settings → Security → Pure Mode`.
 4. Open the app and tap "＋ New widget" to add it to the home screen.
@@ -244,10 +274,10 @@ No analytics SDK, no ads, nothing uploaded. Frames live as WebP in the app's pri
 The build does not use Gradle — it is one script:
 
 ```bash
-./scripts/build-apk-src.sh 635 1.10.521   # javac → aapt2 → d8 → pack → apksig (v2 signature)
+./scripts/build-apk-src.sh 652 1.10.538   # javac → aapt2 → d8 → pack → apksig (v2 signature)
 ```
 
-Output: `dist/AnimWidget-v1.10.521.apk`.
+Output: `dist/AnimWidget-v1.10.538.apk`.
 
 - Needs JDK 17, `aapt2` and Python 3.
 - Toolchain jars (`android-all.jar`, `jdk-core-stubs.jar`, `r8.jar`, `apksig.jar`, `signapk-cli.jar`, `kotlin-stdlib.jar`, `annotations-13.0.jar`, `shizuku-all.jar`, `shizuku-aidl.jar`, `core-lambda-stubs.jar`) live in `toolchain/` and are not shipped; override with `TOOLCHAIN=/path`.

@@ -156,7 +156,6 @@ public final class FrameComposer {
 
     /** acc != null 时：acc[0] 累加阴影耗时、acc[1] 累加内容（clip+drawContent）耗时。 */
     public final void drawFrame(@NotNull Canvas canvas, int width, int height, int sourceWidth, int sourceHeight, @NotNull LayoutMode layout, @NotNull ShapeKind shape, boolean border, int scalePercent, int rotation, int shapeRotation, boolean fitContent, int shadowPercent, @Nullable String shadowCurve, int alphaPercent, float offsetXPercent, float offsetYPercent, int contentScalePercent, float maskOffsetXPercent, float maskOffsetYPercent, @Nullable Bitmap alphaSource, @NotNull Function2<? super Canvas, ? super RectF, Unit> function2, @Nullable long[] acc) {
-        boolean z;
         Intrinsics.checkNotNullParameter(canvas, "canvas");
         Intrinsics.checkNotNullParameter(layout, "layout");
         Intrinsics.checkNotNullParameter(shape, "shape");
@@ -200,21 +199,9 @@ public final class FrameComposer {
         float deltaPx = ShadowSpec.deltaPx(sigmaPx, spec.rho());
         float blurPx = ShadowSpec.blurRadiusPx(sigmaPx);
         float need = shadowAlpha > 0 ? rangePx : 0.0f;
-        // v1.10.216（保留）：**先借画布的空白边距**。画面框 area 往往比画布小（原始比例布局的
-        // 上下留白、固定比例布局的左右留白），那圈空白本来就是透明的，阴影画进去不占画面一点地方。
-        // 只有空白不够（画布比例 = 画面比例）时，画面才按「差额」内缩。
-        float free = Math.max(0.0f, Math.min(Math.min(area.left, w - area.right), Math.min(area.top, h - area.bottom)));
-        // 每边缩进量 = 阴影留白 − 画布本来就让出来的地方（不为负）。
-        float margin = Math.max(0.0f, need - free);
-        RectF inset = insetPreservingRatio(area, margin);
-        boolean hasInset = inset.width() > 8.0f && inset.height() > 8.0f;
-        // v1.10.280：**撤销 v1.10.279 的衬底**。它把同一帧缩到 1/8 再放大铺在画面四周，
-        // 而素材（GIF/贴纸）是**透明底**的 —— 柔化副本从透明区透出来，就变成沿轮廓的一圈灰雾
-        // （用户："这画面边是啥阴，哪来的频散阴影"）。透明素材上不存在"填充"这回事，认输。
-        RectF box = hasInset ? inset : area;
-        if (box.width() < 2.0f || box.height() < 2.0f || box.isEmpty()) {
-            box = new RectF(area);
-        }
+        // v1.10.533：**画面框 = 阴影留白内缩之后的框** —— 这一段抽成 drawBox()，
+        // 因为预览虚线也要贴到同一个框（画面每边缩多少，虚线就得缩多少，否则阴影一开又不贴了）。
+        RectF box = drawBox(area, w, h, alphaPercent, shadowPercent, shadowCurve);
         Path path = ShapeFactory.INSTANCE.path(shape, box.width(), box.height());
         path.offset(box.left, box.top);
         if (shapeRotation != 0) {
@@ -232,26 +219,9 @@ public final class FrameComposer {
             shift.postTranslate(maskDx, maskDy);
             path.transform(shift);
         }
-        switch (WhenMappings.$EnumSwitchMapping$0[layout.ordinal()]) {
-            case 1:
-                z = true;               // 原始比例 → 内接
-                break;
-            case 2:
-                // v1.10.384：**填充 = 永远裁切填满**（界面里这一项是「由布局决定」、灰色不可改）。
-                // 以前这里读 fitContent，而它的默认值是 true → 选了「填充」反而不填，
-                // 和按钮上那行字（由布局决定）自相矛盾。
-                z = false;
-                break;
-            default:
-                // v1.10.384（用户反馈「形状蒙版的适配画面没作用」）：
-                // 1:1 / 4:3 / 16:9 / 9:16 … 这些固定比例蒙版的「适配画面」开关一直是**死的** ——
-                // 这里写死成内接，而 UI 上这一项恰恰是可点的（只有原始比例/填充才锁）。
-                // 现在改为**由开关决定**：开 = 内接（完整显示，默认值，保持 v1.10.285 的"一刀不裁"），
-                // 关 = cover（裁切填满）。
-                z = fitContent;
-                break;
-        }
-        boolean fit = z;
+        // v1.10.533：判定抽成 fitsContent()，因为「画面矩形」也要用同一条判据算
+        // （虚线框贴的是画面，画面多少全看这里，不能再写成两份）。
+        boolean fit = fitsContent(layout, fitContent);
         long _tShadow = acc != null ? android.os.SystemClock.elapsedRealtime() : 0L;
         // 贴一块烘好的阴影（每帧只有 1 次 drawBitmap）。
         float room = Math.min(Math.min(box.left, w - box.right), Math.min(box.top, h - box.bottom));
@@ -332,6 +302,73 @@ public final class FrameComposer {
 
 
 
+    /**
+     * v1.10.533：**画面框** —— 画面框 area 按阴影留白内缩之后的框。
+     *
+     * <p>{@code drawFrame} 与 {@link #pictureRect} 共用这一份：阴影一开，画面每边都要缩，
+     * 虚线框若还贴在 area 上就贴不住画面。
+     */
+    @NotNull
+    private static RectF drawBox(@NotNull RectF area, float canvasWidth, float canvasHeight,
+                                 int alphaPercent, int shadowPercent, @Nullable String shadowCurve) {
+        int strength = RangesKt.coerceIn(shadowPercent, 0, ShadowSpec.STRENGTH_MAX);
+        ShadowSpec spec = ShadowSpec.parse(shadowCurve);
+        int alpha = RangesKt.coerceIn(alphaPercent, 0, 100);
+        int shadowAlpha = strength <= 0 ? 0 : ShadowSpec.effectiveAlpha(strength, alpha);
+        // 留白基准 = 画面框（LESSONS 21：按画布算会让阴影比画面大一圈）
+        float rangePx = spec.rangePx(area.width());
+        float need = shadowAlpha > 0 ? rangePx : 0.0f;
+        // v1.10.216（保留）：**先借画布的空白边距**。画面框 area 往往比画布小（原始比例布局的
+        // 上下留白、固定比例布局的左右留白），那圈空白本来就是透明的，阴影画进去不占画面一点地方。
+        // 只有空白不够（画布比例 = 画面比例）时，画面才按「差额」内缩。
+        float free = Math.max(0.0f, Math.min(Math.min(area.left, canvasWidth - area.right),
+                Math.min(area.top, canvasHeight - area.bottom)));
+        float margin = Math.max(0.0f, need - free);
+        RectF inset = insetPreservingRatio(area, margin);
+        boolean hasInset = inset.width() > 8.0f && inset.height() > 8.0f;
+        // v1.10.280：**撤销 v1.10.279 的衬底**。它把同一帧缩到 1/8 再放大铺在画面四周，
+        // 而素材（GIF/贴纸）是**透明底**的 —— 柔化副本从透明区透出来，就变成沿轮廓的一圈灰雾
+        // 透明素材上不存在"填充"这回事。
+        RectF box = hasInset ? inset : area;
+        if (box.width() < 2.0f || box.height() < 2.0f || box.isEmpty()) {
+            box = new RectF(area);
+        }
+        return box;
+    }
+
+    /**
+     * 绕自身中心转 rotation 度之后的包围盒（旋转分支画的是转过的矩形，虚线要包住它）。
+     *
+     * <p>v1.10.533：这里**不用 android.graphics.Matrix** —— 它在 android-all.jar 里是 native，
+     * 脱机门禁跑不起来（`UnsatisfiedLinkError: nCreate`）。四个角自己算，纯三角函数，
+     * 门禁能直接验。
+     */
+    @NotNull
+    private static RectF rotatedBounds(@NotNull RectF rect, int rotation) {
+        double radians = Math.toRadians(rotation);
+        float cosValue = (float) Math.cos(radians);
+        float sinValue = (float) Math.sin(radians);
+        float cx = rect.centerX();
+        float cy = rect.centerY();
+        float[] xs = {rect.left, rect.right, rect.left, rect.right};
+        float[] ys = {rect.top, rect.top, rect.bottom, rect.bottom};
+        float minX = Float.MAX_VALUE;
+        float minY = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE;
+        float maxY = -Float.MAX_VALUE;
+        for (int i = 0; i < 4; i++) {
+            float dx = xs[i] - cx;
+            float dy = ys[i] - cy;
+            float px = cx + (dx * cosValue) - (dy * sinValue);
+            float py = cy + (dx * sinValue) + (dy * cosValue);
+            minX = Math.min(minX, px);
+            minY = Math.min(minY, py);
+            maxX = Math.max(maxX, px);
+            maxY = Math.max(maxY, py);
+        }
+        return new RectF(minX, minY, maxX, maxY);
+    }
+
     /** 蒙版路径的包围盒（和布局框取交集）；退化时回退到布局框。 */
     private static RectF maskBounds(@NotNull Path path, @NotNull RectF box) {
         RectF bounds = new RectF();
@@ -387,43 +424,64 @@ public final class FrameComposer {
         return $this$insetPath_u24lambda_u244;
     }
 
-    private final void drawContent(Canvas canvas, RectF area, int sourceWidth, int sourceHeight, int rotation, boolean fit, float offsetXPercent, float offsetYPercent, float contentScale, Function2<? super Canvas, ? super RectF, Unit> function2) {
+    /**
+     * v1.10.533：**画面被画到哪一块**（画布坐标，未旋转；旋转由调用方 canvas.rotate 施加）。
+     *
+     * <p>抽出来是为了让 {@code drawContent} 与 {@link #pictureRect} 用同一份算术 ——
+     * 预览虚线要贴的就是这块矩形，两边各写一份就一定会有一次"贴不住"。
+     */
+    @NotNull
+    private static RectF contentDrawRect(@NotNull RectF area, int sourceWidth, int sourceHeight,
+                                         int rotation, boolean fit, float offsetXPercent,
+                                         float offsetYPercent, float contentScale) {
+        int sw = RangesKt.coerceAtLeast(sourceWidth, 1);
+        int sh = RangesKt.coerceAtLeast(sourceHeight, 1);
         float dx = (area.width() * offsetXPercent) / 100.0f;
         float dy = (area.height() * offsetYPercent) / 100.0f;
-        if (rotation == 0) {
-            if (fit) {
-                float scale = Math.min(area.width() / sourceWidth, area.height() / sourceHeight) * contentScale;
-                float dw = sourceWidth * scale;
-                float dh = sourceHeight * scale;
-                float left = (area.centerX() + dx) - (dw / 2.0f);
-                float top = (area.centerY() + dy) - (dh / 2.0f);
-                function2.invoke(canvas, new RectF(left, top, left + dw, top + dh));
-                return;
-            }
-            float scale2 = Math.max(area.width() / sourceWidth, area.height() / sourceHeight) * contentScale;
-            float dw2 = sourceWidth * scale2;
-            float dh2 = sourceHeight * scale2;
-            float left2 = (area.centerX() - (dw2 / 2.0f)) + dx;
-            float top2 = (area.centerY() - (dh2 / 2.0f)) + dy;
+        if (rotation != 0) {
+            double radians = Math.toRadians(rotation);
+            float cosValue = (float) Math.abs(Math.cos(radians));
+            float sinValue = (float) Math.abs(Math.sin(radians));
+            float rotatedWidth = (sw * cosValue) + (sh * sinValue);
+            float rotatedHeight = (sw * sinValue) + (sh * cosValue);
+            float scale = Math.max(area.width() / rotatedWidth, area.height() / rotatedHeight);
+            float drawWidth = sw * scale;
+            float drawHeight = sh * scale;
+            float centerX = area.centerX() + dx;
+            float centerY = area.centerY() + dy;
+            return new RectF(centerX - (drawWidth / 2.0f), centerY - (drawHeight / 2.0f),
+                    centerX + (drawWidth / 2.0f), centerY + (drawHeight / 2.0f));
+        }
+        float scale = (fit ? Math.min(area.width() / sw, area.height() / sh)
+                : Math.max(area.width() / sw, area.height() / sh)) * contentScale;
+        float drawWidth = sw * scale;
+        float drawHeight = sh * scale;
+        float left = (area.centerX() + dx) - (drawWidth / 2.0f);
+        float top = (area.centerY() + dy) - (drawHeight / 2.0f);
+        return new RectF(left, top, left + drawWidth, top + drawHeight);
+    }
+
+    private final void drawContent(Canvas canvas, RectF area, int sourceWidth, int sourceHeight, int rotation, boolean fit, float offsetXPercent, float offsetYPercent, float contentScale, Function2<? super Canvas, ? super RectF, Unit> function2) {
+        RectF dest = contentDrawRect(area, sourceWidth, sourceHeight, rotation, fit,
+                offsetXPercent, offsetYPercent, contentScale);
+        if (rotation != 0) {
+            // 旋转：以 (area.center + 位移) 为轴心转，画的是未旋转的那块矩形。
+            // v1.10.537：**这里必须和 cover 分支一样裁到画面框**。
+            // 原来这条分支没有 clipRect，放大后再旋转，四个角会铺到框外（阴影留白里也照铺）。
             canvas.save();
             canvas.clipRect(area);
-            function2.invoke(canvas, new RectF(left2, top2, left2 + dw2, top2 + dh2));
+            canvas.rotate(rotation, dest.centerX(), dest.centerY());
+            function2.invoke(canvas, dest);
             canvas.restore();
             return;
         }
-        double radians = Math.toRadians(rotation);
-        float cosValue = (float) Math.abs(Math.cos(radians));
-        float sinValue = (float) Math.abs(Math.sin(radians));
-        float rotatedWidth = (sourceWidth * cosValue) + (sourceHeight * sinValue);
-        float rotatedHeight = (sourceWidth * sinValue) + (sourceHeight * cosValue);
-        float scale3 = Math.max(area.width() / rotatedWidth, area.height() / rotatedHeight);
-        float drawWidth = sourceWidth * scale3;
-        float drawHeight = sourceHeight * scale3;
-        float centerX = area.centerX() + dx;
-        float centerY = area.centerY() + dy;
+        if (fit) {
+            function2.invoke(canvas, dest);
+            return;
+        }
         canvas.save();
-        canvas.rotate(rotation, centerX, centerY);
-        function2.invoke(canvas, new RectF(centerX - (drawWidth / 2.0f), centerY - (drawHeight / 2.0f), centerX + (drawWidth / 2.0f), centerY + (drawHeight / 2.0f)));
+        canvas.clipRect(area);
+        function2.invoke(canvas, dest);
         canvas.restore();
     }
 
@@ -453,6 +511,87 @@ public final class FrameComposer {
         float contentHeight = width / layout.getRatio();
         float top = (height - contentHeight) / 2.0f;
         return new RectF(0.0f, top, width, top + contentHeight);
+    }
+
+    /**
+     * v1.10.533：**画面是不是"内接"**（true = fit，完整显示；false = cover，裁切填满）。
+     *
+     * <p>唯一判据来源：{@code drawFrame} 与 {@link #pictureRect} 都调它，不许再各写一份。
+     */
+    public static boolean fitsContent(@NotNull LayoutMode layout, boolean fitContent) {
+        Intrinsics.checkNotNullParameter(layout, "layout");
+        if (layout == LayoutMode.FIT) {
+            // 原始比例：画布比例 = 素材比例（previewRatio 决定的），内接即等于铺满 → 不裁切也贴满。
+            return true;
+        }
+        // v1.10.538：固定比例的「适配画面」保持可点。
+        // 固定比例由开关决定：
+        //   开 = 内接（完整显示，不裁切）→ 画面必然在两侧留白，虚线框仍是布局框、不追画面；
+        //   关 = 裁切填满 → 画面填满布局框，四周正好 1dp（要"四周统一"就选这一档）。
+        return fitContent;
+    }
+
+    /** 默认参数（无旋转 / 缩放 / 位移 / 阴影）的重载，见下面的完整版。 */
+    @NotNull
+    public final RectF pictureRect(int sourceWidth, int sourceHeight, int width, int height,
+                                   @NotNull LayoutMode layout, boolean fitContent) {
+        return pictureRect(sourceWidth, sourceHeight, width, height, layout, fitContent,
+                0, 100, 0.0f, 0.0f, 100, 0, null);
+    }
+
+    /**
+     * **画面矩形** —— 画面在一张 W×H 的画布里到底占哪一块（画布坐标）。
+     *
+     * <p>虚线框**不贴**这个矩形：虚线 = 布局框（画布），只随布局变；拖动 / 缩放 / 旋转画面时框不动。
+     * 这个函数用于**核对「画面有没有超出框」**（脱机门禁 preview-frame-check.sh），
+     * 以及需要"画面占比"一类几何的地方。
+     *
+     * <p>整条链与 {@code drawFrame} 同源，顺序也一致：
+     * <pre>
+     *   area  = contentRect()          // 画面框（布局比例决定的一块）
+     *   box   = drawBox()              // 阴影留白内缩（阴影一开画面就缩）
+     *   dest  = contentDrawRect()      // 内接/铺满 + 内容缩放 + 位移 + 旋转
+     *   vis   = dest ∩ 画布            // 位图边界就是画布的裁切线
+     *   vis   = vis ∩ box              // 铺满分支里 drawContent 还会 clipRect(box)
+     * </pre>
+     *
+     * <p>形状路径（{@code maskBounds}）与那 2px 出血不计入：那是形状自身轮廓与抗锯齿的量级，
+     * 计入反而会和"画面框"这个词打架（蒙版是蒙版、画面是画面，见 drawFrame 里那段注释）。
+     */
+    @NotNull
+    public final RectF pictureRect(int sourceWidth, int sourceHeight, int width, int height,
+                                   @NotNull LayoutMode layout, boolean fitContent,
+                                   int rotation, int contentScalePercent,
+                                   float offsetXPercent, float offsetYPercent,
+                                   int alphaPercent, int shadowPercent, @Nullable String shadowCurve) {
+        Intrinsics.checkNotNullParameter(layout, "layout");
+        int sw = RangesKt.coerceAtLeast(sourceWidth, 1);
+        int sh = RangesKt.coerceAtLeast(sourceHeight, 1);
+        int w = RangesKt.coerceAtLeast(width, 1);
+        int h = RangesKt.coerceAtLeast(height, 1);
+        RectF area = contentRect(sw, sh, w, h, layout);
+        if (area.width() < 2.0f || area.height() < 2.0f || area.isEmpty()) {
+            area = new RectF(0.0f, 0.0f, w, h);
+        }
+        RectF box = drawBox(area, w, h, alphaPercent, shadowPercent, shadowCurve);
+        boolean fit = fitsContent(layout, fitContent);
+        RectF dest = contentDrawRect(box, sw, sh, rotation, fit,
+                RangesKt.coerceIn(offsetXPercent, -50.0f, 50.0f),
+                RangesKt.coerceIn(offsetYPercent, -50.0f, 50.0f),
+                RangesKt.coerceIn(contentScalePercent, 0, 300) / 100.0f);
+        if (rotation != 0) {
+            dest = rotatedBounds(dest, rotation);
+        }
+        RectF visible = new RectF(dest);
+        boolean hit = visible.intersect(new RectF(0.0f, 0.0f, w, h));
+        if (hit && !fit && rotation == 0) {
+            hit = visible.intersect(box);
+        }
+        if (!hit || visible.width() < 2.0f || visible.height() < 2.0f || visible.isEmpty()) {
+            // 退化（画面被位移/缩放推到画布外）：退回画面框，绝不返回空矩形（否则虚线消失）
+            return new RectF(area);
+        }
+        return visible;
     }
 
     private final RectF autoContentRect(int sourceWidth, int sourceHeight, int width, int height) {

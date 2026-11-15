@@ -172,6 +172,15 @@ public final class SettingsActivity extends I18nActivity {
     LinearLayout barPage1;
     LinearLayout barPage2;
     View spacerBottom;
+    /** v1.10.522：底部让位的高度动画（null = 没有动画在跑）。 */
+    @Nullable
+    private android.animation.ValueAnimator spacerAnim;
+    /** v1.10.522：让位动画的目标高度（px，0 = 收起）。触摸打断时用它判断方向。 */
+    private int spacerTargetPx;
+    /** v1.10.523：关闭动效只跑一次（连点返回不会 finish 两次）。 */
+    private boolean closing;
+    /** 底部让位的高度（dp）—— 与 activity_settings.xml 里 spacer_bottom 的写死值一致。 */
+    private static final int SPACER_DP = 104;
     /** 0 展开 / 1 半折叠（只留第一行）/ 2 全折叠 */
     private int schemeFold;
     /** 待删除的方案 id（-1 = 当前是保存流程） */
@@ -407,7 +416,7 @@ public final class SettingsActivity extends I18nActivity {
         updateModeValue();
         this.tvContrast.setOnClickListener((v) -> showContrastInput());
 
-        // ---- v1.10.98（需求 4）：字体折叠面板
+        // ---- v1.10.98：字体折叠面板
         this.btnFontToggle = findViewById(R.id.btn_font_toggle);
         this.tvFontValue = (TextView) findViewById(R.id.tv_font_value);
         this.llFonts = (LinearLayout) findViewById(R.id.ll_fonts);
@@ -474,24 +483,28 @@ public final class SettingsActivity extends I18nActivity {
             });
         }
         buildSchemes(false, -1L);
-        CheckBox shapeSystem = (CheckBox) findViewById(R.id.cb_shape_system);
-        shapeSystem.setChecked(ThemePrefs.INSTANCE.getShapeFollowSystem(this));
-        shapeSystem.setOnCheckedChangeListener((v1, v2) -> {
-            onCreate$lambda$6(SettingsActivity.this, v1, v2);
-        });
-        findViewById(R.id.row_shape_system).setOnClickListener((v1) -> {
-            onCreate$lambda$7(shapeSystem, v1);
-        });
+        // v1.10.522：形状图形的颜色恒跟随系统，没有开关
+        // （= 默认行为）。原来的 cb_shape_system / row_shape_system 连同监听一起拿掉，
+        // 形状格与布局卡片一律取系统控件前景色，不再有第二个分支。
         buildPresets();
         buildColorRows();
         ((Button) findViewById(R.id.btn_reset_theme)).setOnClickListener((v1) -> {
             onCreate$lambda$9(SettingsActivity.this, v1);
         });
         ScrollView scroll = (ScrollView) findViewById(R.id.root_settings);
-        TextView closePill = (TextView) findViewById(R.id.btn_settings_close);
-        closePill.setOnClickListener((v1) -> {
-            onCreate$lambda$10(SettingsActivity.this, v1);
+        // v1.10.522：补位动画**可被触摸/滑动打断**。
+        // 手指一落下就把剩下的距离用 90ms 收尾（不是硬跳到底），并且**不吞事件** ——
+        // 返回 false，滚动/fling/按下反馈全都照旧，打断后衔接自然。
+        scroll.setOnTouchListener((v, e) -> {
+            if (e.getActionMasked() == android.view.MotionEvent.ACTION_DOWN
+                    && this.spacerAnim != null) {
+                animateBottomSpacer(this.spacerTargetPx > 0, 90L);
+            }
+            return false;
         });
+        // v1.10.523：右上角那颗是自绘的 BackButton（不再是 TextView 胶囊）
+        View closePill = findViewById(R.id.btn_settings_close);
+        closePill.setOnClickListener((v1) -> closeWithAnimation());
         float closeOffset = 12 * getResources().getDisplayMetrics().density;
         Ref.IntRef lastScrollY = new Ref.IntRef();
         scroll.setOnScrollChangeListener((v3, v4, v5, v6, v7) -> {
@@ -624,7 +637,7 @@ public final class SettingsActivity extends I18nActivity {
         this.lastLangPickAt = now;
         LocaleHelper.INSTANCE.set(this, mode);
         Diag.warn(this, "A05", "语言档=" + mode + " 触发=点击");
-        // v1.10.1（需求 9）：原地换文案 —— 不重建、不折叠菜单、不丢滚动位置
+        // v1.10.1：原地换文案 —— 不重建、不折叠菜单、不丢滚动位置
         // v1.10.99（反馈 2.2）：外面裹一层整页叠化，不要硬刷
         Morph.crossfade(this, () -> {
             applyLocaleInPlace();
@@ -679,7 +692,7 @@ public final class SettingsActivity extends I18nActivity {
             Intrinsics.throwUninitializedPropertyAccessException("langGroup");
             return;
         }
-        // v1.10.1（需求 7）：高度平滑过渡 + 内容淡入淡出，250ms；动画中途再点能顺滑反向
+        // v1.10.1：高度平滑过渡 + 内容淡入淡出，250ms；动画中途再点能顺滑反向
         this$0.animateExpand(radioGroup, expand);
         langToggle.animate().rotation(expand ? 180.0f : 0.0f).setDuration(160L).start();
     }
@@ -797,14 +810,8 @@ public final class SettingsActivity extends I18nActivity {
         onCreate$toggleLanguage(this$0, $langToggle, radioGroup.getVisibility() != 0);
     }
 
-    private static final void onCreate$lambda$6(SettingsActivity this$0, CompoundButton compoundButton, boolean checked) {
-        Intrinsics.checkNotNullParameter(this$0, "this$0");
-        ThemePrefs.INSTANCE.setShapeFollowSystem(this$0, checked);
-    }
-
-    private static final void onCreate$lambda$7(CheckBox $shapeSystem, View it) {
-        $shapeSystem.toggle();
-    }
+    // v1.10.522：onCreate$lambda$6（写 shape_follow_system）/ onCreate$lambda$7（点行切勾选）
+    // 随「形状图形颜色跟随系统」开关一起删除。
 
     private static final void onCreate$lambda$9(SettingsActivity this$0, View it) {
         Intrinsics.checkNotNullParameter(this$0, "this$0");
@@ -829,12 +836,37 @@ public final class SettingsActivity extends I18nActivity {
         this$0.refreshThemeInPlace();
     }
 
-    private static final void onCreate$lambda$10(SettingsActivity this$0, View it) {
-        Intrinsics.checkNotNullParameter(this$0, "this$0");
-        this$0.finish();
+    /**
+     * v1.10.523（需求）：左上返回按钮的**关闭动效**（原来是直接 finish()，硬切）。
+     *
+     * <p>顺序：按钮自己先缩一下 → 整页淡出 + 下沉 10dp → finish。180ms，
+     * 用 Decelerate，和页面进入时的曲线同一量级；`closing` 保证连点只跑一次
+     * （否则第二次点会在一段正在跑的动画上叠 withEndAction，可能 finish 两次）。</p>
+     */
+    private void closeWithAnimation() {
+        if (this.closing) {
+            return;
+        }
+        this.closing = true;
+        final View back = findViewById(R.id.btn_settings_close);
+        if (back != null) {
+            back.animate().scaleX(0.88f).scaleY(0.88f).setDuration(90L).start();
+        }
+        final View content = findViewById(android.R.id.content);
+        if (content == null) {
+            finish();
+            return;
+        }
+        content.animate()
+                .alpha(0.0f)
+                .translationY(10.0f * density())
+                .setDuration(180L)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(() -> finish())
+                .start();
     }
 
-    private static final void onCreate$showClose(TextView closePill) {
+    private static final void onCreate$showClose(View closePill) {
         if (closePill.getVisibility() == 0 && closePill.getAlpha() > 0.99f) {
             if (closePill.getTranslationY() == 0.0f) {
                 return;
@@ -845,7 +877,7 @@ public final class SettingsActivity extends I18nActivity {
         closePill.animate().alpha(1.0f).translationY(0.0f).setDuration(160L).start();
     }
 
-    private static final void onCreate$hideClose(TextView closePill, float closeOffset) {
+    private static final void onCreate$hideClose(View closePill, float closeOffset) {
         if (closePill.getVisibility() != 0) {
             return;
         }
@@ -855,11 +887,11 @@ public final class SettingsActivity extends I18nActivity {
         }).start();
     }
 
-    private static final void onCreate$hideClose$lambda$11(TextView $closePill) {
+    private static final void onCreate$hideClose$lambda$11(View $closePill) {
         $closePill.setVisibility(8);
     }
 
-    private static final void onCreate$lambda$12(Ref.IntRef $lastScrollY, TextView $closePill, float $closeOffset, View view, int i, int y, int i2, int i3) {
+    private static final void onCreate$lambda$12(Ref.IntRef $lastScrollY, View $closePill, float $closeOffset, View view, int i, int y, int i2, int i3) {
         Intrinsics.checkNotNullParameter($lastScrollY, "$lastScrollY");
         if (y <= 0) {
             onCreate$showClose($closePill);
@@ -1481,10 +1513,16 @@ public final class SettingsActivity extends I18nActivity {
                 }));
 
         // ①⁗ 动图分辨率（v1.10.254）—— 之前**根本没有**这一档，动图最多只能到「长边 1080」
-        host.addView(buildValueRow(s(R.string.settings_anim_quality),
-                s(R.string.settings_anim_quality_hint),
-                animQualityLabel(WidgetRender.animQuality(this)),
-                v -> openAnimQuality(), 2));
+        // v1.10.532：档位说明**只显示当前选中的那一档**。
+        // 原来是一整串"标准=…；高清=…；1:1=…"，读起来要先自己对号入座；
+        // 现在副标题跟着值走，选哪档显示哪档，改档时一起刷新（见 openAnimQuality）。
+        final int aqNow = WidgetRender.animQuality(this);
+        View aqRow = buildValueRow(s(R.string.settings_anim_quality),
+                s(animQualityHintRes(aqNow)),
+                animQualityLabel(aqNow),
+                v -> openAnimQuality(), 2);
+        this.animHintView = hintOf(aqRow);
+        host.addView(aqRow);
 
         // ② 预装帧（A 方案）
         host.addView(buildSwitchRow(s(R.string.settings_lab_flip),
@@ -1542,6 +1580,8 @@ public final class SettingsActivity extends I18nActivity {
         // v1.10.272：收集本卡所有「主标题 + 副标题」的行，并按上次的状态摆好（不播动画）
         collectFoldRows(host);
         restoreSubtitleFold();
+        // v1.10.522：整张卡按「分组圆角」重新铺一遍（外侧 14dp / 相邻内侧 6dp），间距 8dp → 4dp
+        stylePerfGroup(host);
         header.setOnClickListener(v -> {
             boolean expand = host.getVisibility() != View.VISIBLE;
             animateExpand(host, expand);
@@ -1569,19 +1609,77 @@ public final class SettingsActivity extends I18nActivity {
         bar.setTag("fold_ctrl");
         LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        blp.bottomMargin = (int) (dp * 8.0f);
+        // v1.10.522：这一行也算分组的一部分 —— 与下面第一张行卡之间 8dp → 4dp
+        blp.bottomMargin = (int) (dp * 4.0f);
         bar.setLayoutParams(blp);
 
         Button expand = subtitleFoldButton(s(R.string.settings_subtitle_expand));
         Button collapse = subtitleFoldButton(s(R.string.settings_subtitle_collapse));
+        // v1.10.522：两颗按钮本身也是**横向分组**（左端大、内侧小），间距 8dp → 2dp
+        expand.setTag("group_pill_left");
+        collapse.setTag("group_pill_right");
         LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
                 0, (int) (dp * 36.0f), 1.0f);
-        lp1.setMarginEnd((int) (dp * 8.0f));
+        lp1.setMarginEnd((int) (dp * 2.0f));
         bar.addView(expand, lp1);
         bar.addView(collapse, new LinearLayout.LayoutParams(0, (int) (dp * 36.0f), 1.0f));
         expand.setOnClickListener(v -> setSubtitleFold(false));
         collapse.setOnClickListener(v -> setSubtitleFold(true));
         return bar;
+    }
+
+    /**
+     * v1.10.522：**性能卡的「分组圆角」**。
+     *
+     * <p>这张卡里每一行本来就是「一枚 14dp 圆角的浅色块 + 8dp 间距」，一列排下来像一串
+     * 互不相干的胶囊。按统一规则重排：</p>
+     * <ul>
+     *   <li>整列拼成**一个容器** —— 第一行只圆上面两角、最后一行只圆下面两角（外侧 14dp），
+     *       中间行四角统一收到 6dp（相邻内侧小）；</li>
+     *   <li>行间距 8dp → **4dp**；「展开 / 收起」那一行与第一张行卡之间同样收到 4dp
+     *       （那个间距在 {@link #buildSubtitleControlRow()} 里设）。</li>
+     * </ul>
+     *
+     * <p>底色沿用原来的「正文色 4.5%」，只换圆角与间距 —— 对比度、深浅色、换肤链路都不动。</p>
+     */
+    private void stylePerfGroup(@NotNull LinearLayout host) {
+        float dp = density();
+        ThemeColors c = ThemeManager.INSTANCE.colors(this);
+        int count = 0;
+        for (int i = 0; i < host.getChildCount(); i++) {
+            if (!"fold_ctrl".contentEquals(String.valueOf(host.getChildAt(i).getTag()))) {
+                count++;
+            }
+        }
+        if (count <= 0) {
+            return;
+        }
+        int index = 0;
+        for (int i = 0; i < host.getChildCount(); i++) {
+            View child = host.getChildAt(i);
+            if ("fold_ctrl".contentEquals(String.valueOf(child.getTag()))) {
+                continue;   // 控制行没有底色，间距已在它自己的 LayoutParams 里
+            }
+            int slot;
+            if (count == 1) {
+                slot = ThemeManager.GROUP_SINGLE;
+            } else if (index == 0) {
+                slot = ThemeManager.GROUP_FIRST;
+            } else if (index == count - 1) {
+                slot = ThemeManager.GROUP_LAST;
+            } else {
+                slot = ThemeManager.GROUP_MIDDLE;
+            }
+            child.setBackground(ThemeManager.INSTANCE.grouped(this,
+                    fontAlpha(c.getText(), 0.045f), slot, true, 14.0f, 6.0f));
+            ViewGroup.LayoutParams lp = child.getLayoutParams();
+            if (lp instanceof LinearLayout.LayoutParams) {
+                ((LinearLayout.LayoutParams) lp).bottomMargin =
+                        index == count - 1 ? 0 : (int) (dp * 4.0f);
+                child.setLayoutParams(lp);
+            }
+            index++;
+        }
     }
 
     private Button subtitleFoldButton(String text) {
@@ -1595,6 +1693,7 @@ public final class SettingsActivity extends I18nActivity {
         b.setMinimumHeight(0);
         b.setIncludeFontPadding(false);
         b.setPadding(0, 0, 0, 0);
+        // tag 由调用方给（v1.10.522 起是 group_pill_left / group_pill_right）
         b.setTag("pill_soft");
         return b;
     }
@@ -1960,6 +2059,12 @@ public final class SettingsActivity extends I18nActivity {
                     if (valueView != null) {
                         valueView.setText(SettingsActivity.this.animQualityLabel(real));
                     }
+                    // v1.10.532：副标题一起换成新档的说明
+                    TextView hintView = SettingsActivity.this.animHintView;
+                    if (hintView != null) {
+                        hintView.setText(SettingsActivity.this.s(
+                                SettingsActivity.this.animQualityHintRes(real)));
+                    }
                     refreshPerfSummary();
                     final Context app = getApplicationContext();
                     Thread t = new Thread(new Runnable() { // from class: io.github.animwidget.SettingsActivity$animQualityRepush
@@ -2065,6 +2170,43 @@ public final class SettingsActivity extends I18nActivity {
     @NotNull
     /** v1.10.254：动图分辨率那一行的值视图（改完档位要立刻把新值写上）。 */
     private TextView animValueView;
+
+    /** v1.10.532：动图分辨率那一行的**副标题**视图（只显示当前档的说明）。 */
+    @Nullable
+    private TextView animHintView;
+
+    /** 当前档位对应的说明（0 标准 / 1 高清 / 2 1:1）。 */
+    private int animQualityHintRes(int level) {
+        if (level >= 2) {
+            return R.string.settings_anim_quality_hint_2;
+        }
+        if (level == 1) {
+            return R.string.settings_anim_quality_hint_1;
+        }
+        return R.string.settings_anim_quality_hint_0;
+    }
+
+    /** 从 {@link #buildValueRow} 造出来的行里取出副标题 TextView（结构：行 > 文本块 > [标题, 副标题]）。 */
+    @Nullable
+    private static TextView hintOf(@Nullable View row) {
+        if (!(row instanceof ViewGroup)) {
+            return null;
+        }
+        ViewGroup group = (ViewGroup) row;
+        if (group.getChildCount() == 0) {
+            return null;
+        }
+        View block = group.getChildAt(0);
+        if (!(block instanceof ViewGroup)) {
+            return null;
+        }
+        ViewGroup texts = (ViewGroup) block;
+        if (texts.getChildCount() < 2) {
+            return null;
+        }
+        View hint = texts.getChildAt(1);
+        return hint instanceof TextView ? (TextView) hint : null;
+    }
 
     private View buildValueRow(@NotNull String title, @NotNull String hint, @NotNull String value,
                               @Nullable View.OnClickListener onClick) {
@@ -3782,6 +3924,97 @@ public final class SettingsActivity extends I18nActivity {
         return -1;
     }
 
+    /**
+     * v1.10.522：**底部让位的过渡动画**（设置页「补位」不再硬跳）。
+     *
+     * <h3>为什么会跳</h3>
+     * 配色方案的动作条浮在底部，内容区末尾用一枚 104dp 的 {@code spacer_bottom} 给它让位。
+     * 长按方案 → 弹出面板（动作条出现，spacer 变 VISIBLE）→ 把页面滑到最底 → 关掉面板
+     * （动作条淡出，spacer 变 GONE）：**内容高度一下少 104dp**，ScrollView 在下一趟布局
+     * 直接把 scrollY 夹到新的最大值 —— 用户看到的就是「滚动位置突然补位，没有过渡」。
+     *
+     * <h3>怎么修</h3>
+     * 把 {@code setVisibility} 换成**高度插值**：spacer 在 240ms 内从 104dp 收到 0（或反过来），
+     * ScrollView 每一帧只被夹一点点，滚动位置就跟着平滑地补回来。
+     * 选高度动画而不是「滚 scrollY」的原因：
+     * <ul>
+     *   <li>不假设用户此刻在最底部 —— 内容高度变了但页没到底时，本来就不该动滚动位置；</li>
+     *   <li>不跟手指抢事件：动画改的是布局参数，用户随时可以继续滚；</li>
+     *   <li>打断时只需要「改目标 + 缩时长」，从当前高度接着走，不会跳帧
+     *       （见 {@code root_settings} 上那个 ACTION_DOWN 监听）。</li>
+     * </ul>
+     *
+     * @param shown true = 让位（动作条出现）；false = 收起
+     * @param overrideDuration &gt; 0 时用这个时长（触摸打断时的快速收尾），否则按剩余距离算
+     */
+    private void animateBottomSpacer(boolean shown, long overrideDuration) {
+        View spacer = this.spacerBottom;
+        if (spacer == null) {
+            return;
+        }
+        final int full = (int) (SPACER_DP * density());
+        int from;
+        if (spacer.getVisibility() == View.VISIBLE) {
+            ViewGroup.LayoutParams lp0 = spacer.getLayoutParams();
+            from = lp0 != null && lp0.height > 0 ? lp0.height : full;
+        } else {
+            from = 0;
+        }
+        final int target = shown ? full : 0;
+        this.spacerTargetPx = target;
+        // 先清字段再 cancel：cancel() 会同步回调 onAnimationEnd，
+        // 字段已经换人，旧动画的 end 会被下面的判重挡掉（不会把 spacer 提前 GONE）。
+        android.animation.ValueAnimator running = this.spacerAnim;
+        if (running != null) {
+            this.spacerAnim = null;
+            running.cancel();
+        }
+        if (from == target) {
+            setSpacerHeight(target, target > 0);
+            return;
+        }
+        spacer.setVisibility(View.VISIBLE);   // 动画期间必须参与布局，否则改高度不生效
+        long duration = overrideDuration > 0L
+                ? overrideDuration
+                : Math.max(90L, Math.round(240.0 * Math.abs(target - from) / full));
+        final android.animation.ValueAnimator anim =
+                android.animation.ValueAnimator.ofInt(from, target);
+        anim.setDuration(duration);
+        anim.setInterpolator(shown
+                ? new android.view.animation.DecelerateInterpolator()
+                : new android.view.animation.AccelerateDecelerateInterpolator());
+        anim.addUpdateListener(a -> setSpacerHeight(((Integer) a.getAnimatedValue()).intValue(), true));
+        anim.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator a) {
+                if (SettingsActivity.this.spacerAnim != a) {
+                    return;   // 已被新动画接管
+                }
+                SettingsActivity.this.spacerAnim = null;
+                setSpacerHeight(target, target > 0);
+            }
+        });
+        this.spacerAnim = anim;
+        anim.start();
+    }
+
+    /** 把让位块的高度写成 px（visible=false 且高度为 0 时顺手 GONE，省掉一趟无效布局）。 */
+    private void setSpacerHeight(int px, boolean visible) {
+        View spacer = this.spacerBottom;
+        if (spacer == null) {
+            return;
+        }
+        ViewGroup.LayoutParams lp = spacer.getLayoutParams();
+        if (lp != null && lp.height != px) {
+            lp.height = px;
+            spacer.setLayoutParams(lp);
+        }
+        int want = visible ? View.VISIBLE : View.GONE;
+        if (spacer.getVisibility() != want) {
+            spacer.setVisibility(want);
+        }
+    }
+
     /** @param save true = 「取消 / 确认」（保存当前配色）；false = 「删除 / 取消」 */
     private void showActionBar(boolean save, long id) {
         if (this.schemeBar == null) {
@@ -3846,9 +4079,8 @@ public final class SettingsActivity extends I18nActivity {
             });
         }
         styleActionBar(ThemeManager.INSTANCE.colors(this));
-        if (this.spacerBottom != null) {
-            this.spacerBottom.setVisibility(View.VISIBLE);
-        }
+        // v1.10.522：底部让位改成**高度过渡**（见 animateBottomSpacer 的注释）
+        animateBottomSpacer(true, -1L);
         // 先取消上一次的显示/隐藏动画，避免「正在淡出时又点开」被 withEndAction 强行 GONE
         this.schemeBar.animate().cancel();
         if (this.schemeBar.getVisibility() != View.VISIBLE) {
@@ -3867,18 +4099,15 @@ public final class SettingsActivity extends I18nActivity {
         this.pendingDeleteId = -1L;
         this.pendingUpdateId = -1L;
         if (this.schemeBar == null || this.schemeBar.getVisibility() != View.VISIBLE) {
-            if (this.spacerBottom != null) {
-                this.spacerBottom.setVisibility(View.GONE);
-            }
+            animateBottomSpacer(false, -1L);
             return;
         }
         this.schemeBar.animate().cancel();
         this.schemeBar.animate().alpha(0.0f).translationY(26 * density()).setDuration(150L)
                 .withEndAction(() -> {
                     this.schemeBar.setVisibility(View.GONE);
-                    if (this.spacerBottom != null) {
-                        this.spacerBottom.setVisibility(View.GONE);
-                    }
+                    // v1.10.522：不再瞬间 GONE —— 见 animateBottomSpacer
+                    animateBottomSpacer(false, -1L);
                 }).start();
     }
 
@@ -4163,7 +4392,8 @@ public final class SettingsActivity extends I18nActivity {
         // v1.10.388：「系统预设」小标题前的三色块符号（自绘，代替再写一个同字数标题）
         View presetGlyph = findViewById(R.id.glyph_presets);
         if (presetGlyph instanceof GlyphView) {
-            ((GlyphView) presetGlyph).setGlyph(GlyphView.SWATCHES);
+            // v1.10.522：「系统预设」左侧图标重新绘制 —— 三段色环（GlyphView.WHEEL）
+            ((GlyphView) presetGlyph).setGlyph(GlyphView.WHEEL);
             ((GlyphView) presetGlyph).setTintColor(
                     ThemeManager.INSTANCE.withAlpha(ThemeManager.INSTANCE.colors(this).getText(), 0.62f));
         }

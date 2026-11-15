@@ -381,6 +381,10 @@ final class NumDialog {
                 // 窗口 = 卡片 + 两侧投影留白（卡片宽度因此和以前完全一致）
                 int win = Math.min(card + px(SHADOW_PAD_DP * 2), screen - px(6));
                 window.setLayout(win, WindowManager.LayoutParams.WRAP_CONTENT);
+                // v1.10.525：显式把窗口钉在屏幕中间。
+                // 之前依赖系统默认的居中（浮动窗口确实默认居中），但换成自绘滑条后内容变高，
+                // 观感上会"往下沉"；这里把 gravity 与偏移都写成明确值，和内容高度无关。
+                window.setGravity(android.view.Gravity.CENTER);
             }
         } catch (Throwable ignored) {
         }

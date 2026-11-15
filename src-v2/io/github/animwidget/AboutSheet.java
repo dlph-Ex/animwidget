@@ -368,10 +368,16 @@ public final class AboutSheet {
     @NotNull
     private static String twoLines(@NotNull String dotted) {
         // 32 字节 × 2 + 31 个冒号 = 95 个字符；第 16 字节末尾的冒号在下标 47。
+        //
+        // v1.10.522：**换行处的冒号不能丢**。v1.10.517 折行时用
+        // {@code substring(0, 47) + "\n" + substring(48)} —— 47 是「第 16 个字节之后的那个冒号」
+        // 的下标，于是两行各吃掉半个分隔符：上行末尾没有冒号、下行又少一个字节的分隔。
+        // 现在第一行**连那个冒号一起带走**（0..47，共 48 字符），第二行从下标 48 开始，
+        // 折点永远落在「:」之后，逐字节核对不会以为少了一段。
         if (dotted.length() < 48) {
             return dotted;
         }
-        return dotted.substring(0, 47) + "\n" + dotted.substring(48);
+        return dotted.substring(0, 48) + "\n" + dotted.substring(48);
     }
 
     /** 点一下把完整指纹放进剪贴板 —— 除了截图，多一条能拿去逐段核对的路径。 */

@@ -109,7 +109,19 @@ public final class ConfigActivity extends I18nActivity {
     int sourceWidth;
     int sourceHeight;
     long sourceDurationMs;
-    boolean shapesExpanded;
+    // v1.10.522：形状蒙版是左右滑动的一行，没有「展开 / 收起」两态，也就没有 shapesExpanded 字段。
+    /** v1.10.525：下一次 buildShapeGrid() 之后，选中框是否播「点到点移动」动画。 */
+    boolean shapeFrameAnimate;
+    /** v1.10.532：预览虚线的形变动画（null = 没有在跑）。v1.10.533 起只管「上一个目标」。 */
+    @Nullable
+    private android.animation.ValueAnimator boxMorphAnim;
+    /** v1.10.533：虚线自绘层（贴画面矩形）。 */
+    @Nullable
+    private PreviewFrameView previewDash;
+    /** v1.10.533：上一次形变的目标（用于"同一个目标不重启"）。 */
+    private final android.graphics.RectF boxMorphTarget = new android.graphics.RectF();
+    private int boxMorphTargetWidth;
+    private int boxMorphTargetHeight;
     int selectedRotation;
     int selectedShapeRotation;
     float selectedOffsetX;
@@ -222,10 +234,10 @@ public final class ConfigActivity extends I18nActivity {
     WidgetConfig exportSnapshot;
     @org.jetbrains.annotations.Nullable
     Uri exportUri;
-    // v1.10.26（需求 4）：这一轮导出用的确切帧率 ×10（337 = 33.7fps），
+    // v1.10.26：这一轮导出用的确切帧率 ×10（337 = 33.7fps），
     // 不再从 config.getFps()（整数档位）反推，避免 33.7 → 34 的漂移
     int exportFpsX10;
-    // v1.10.28（需求 2）：导出期间「冻结帧」的帧号 —— 切布局/蒙版仍然实时预览，
+    // v1.10.28：导出期间「冻结帧」的帧号 —— 切布局/蒙版仍然实时预览，
     // 但永远画这一帧，所以既看得见效果、又不会前进/倒退
     int previewFrozenIndex = -1;
     /** v1.10.54：已导出、等用户点「保存配置」才提交的结果。 */
@@ -445,7 +457,7 @@ public final class ConfigActivity extends I18nActivity {
     protected void onStart() {
         super.onStart();
         this.pageVisible = true; // v1.10.56
-        // v1.10.1（需求 0）：应用自己的界面在前台 = 不受限
+        // v1.10.1：应用自己的界面在前台 = 不受限
         DeskWatcher.setAppForeground(true);
         // v1.10.4：回到前台
         // 1) 帧还在 → 恢复预览播放（离开时只是停了播放）
@@ -563,7 +575,7 @@ public final class ConfigActivity extends I18nActivity {
         super.onResume();
         getWindow().getDecorView().removeCallbacks(this.themePoll);
         getWindow().getDecorView().post(this.themePoll);
-        // v1.10.1（需求 9）：语言变了就地换文案，不重建、不丢状态、不闪
+        // v1.10.1：语言变了就地换文案，不重建、不丢状态、不闪
         syncLocale();
         boolean dark = ThemeManager.INSTANCE.isDark(this);
         if (dark != this.appliedDark) {
@@ -680,7 +692,10 @@ public final class ConfigActivity extends I18nActivity {
             setResult(0);
         }
         // C01：确认配置页真的起来了（诊断链路的起点）
-        Diag.warn(this, "C01", "配置页启动 widgetId=" + this.widgetId + (fromPin != 0 ? " 新建" : " 编辑"));
+        // v1.10.530：日志里带上**版本号**。上一轮拿到的日志无法判断跑的是哪个包，
+        // 结果两边都在猜；以后 C01 这一行就写清楚了。
+        Diag.warn(this, "C01", "配置页启动 widgetId=" + this.widgetId
+                + (fromPin != 0 ? " 新建" : " 编辑") + " 版本=" + appVersion());
         WidgetConfig widgetConfigLoad = WidgetStore.INSTANCE.load(this, this.widgetId);
         // v1.10.497（用户要求 4）：「有配置」= 这个组件真的在桌面上导出过（配置只在提交那一刻落盘）。
         // 它只决定主按钮写「导出组件」还是「保存配置」，别的一概不区分。
@@ -735,7 +750,7 @@ public final class ConfigActivity extends I18nActivity {
         View viewFindViewById3 = findViewById(R.id.seek_playback);
         Intrinsics.checkNotNullExpressionValue(viewFindViewById3, "findViewById(...)");
         this.seekPlayback = (SeekBar) viewFindViewById3;
-        // v1.10.26（需求 3）：播放进度条只做「进度显示器」，永久不可拖动 ——
+        // v1.10.26：播放进度条只做「进度显示器」，永久不可拖动 ——
         // 它从小部件播放时钟推导，手动拖动没有任何意义（拖了也会被下一帧覆盖）
         SeekBar playbackSeek = this.seekPlayback;
         playbackSeek.setEnabled(false);
@@ -1129,9 +1144,7 @@ public final class ConfigActivity extends I18nActivity {
         button3.setOnClickListener((v1) -> {
             onCreate$lambda$8(ConfigActivity.this, v1);
         });
-        ((Button) findViewById(R.id.btn_shapes_toggle)).setOnClickListener((v1) -> {
-            onCreate$lambda$9(ConfigActivity.this, v1);
-        });
+        // v1.10.522：形状蒙版是左右滑动式，没有「展开蒙版」按钮（btn_shapes_toggle）
         buildShapeGrid();
         View pickerHost = findViewById(R.id.ly_scroll);
         if (!(pickerHost instanceof LayoutPickerView)) {
@@ -1166,6 +1179,8 @@ public final class ConfigActivity extends I18nActivity {
                         showOutputBusyDialog();
                         return;
                     }
+                    // v1.10.532 起不再做叠化；
+                    // 预览框的平滑形变是另一件事，在 updatePreviewBox → morphFrame 里做。
                     ConfigActivity.this.selectedLayout = mode;
                     ConfigActivity.this.previewDirty = true;
                     ConfigActivity.this.refreshFitButton();
@@ -1440,68 +1455,9 @@ public final class ConfigActivity extends I18nActivity {
         this$0.showRotateDialog(true);
     }
 
-    private static final void onCreate$lambda$9(ConfigActivity this$0, View it) {
-        Intrinsics.checkNotNullParameter(this$0, "this$0");
-        this$0.shapesExpanded = !this$0.shapesExpanded;
-        ((Button) this$0.findViewById(R.id.btn_shapes_toggle)).setText(this$0.shapesExpanded ? this$0.getString(R.string.cfg_collapse_shapes) : this$0.getString(R.string.cfg_expand_shapes));
-        this$0.toggleShapeGridAnimated();
-    }
-
-    /**
-     * 形状格「收起 / 展开」的曲线动画：高度插值 + 淡入，Material 标准缓动曲线
-     * (0.2, 0, 0, 1)。宽度还没量到（首次布局前）时退化为直接显示。
-     */
-    private final void toggleShapeGridAnimated() {
-        final LinearLayout container = (LinearLayout) findViewById(R.id.ll_shapes);
-        final int from = container != null ? container.getHeight() : 0;
-        buildShapeGrid();
-        if (container == null) {
-            return;
-        }
-        int width = container.getWidth();
-        if (from <= 0 || width <= 0) {
-            return;
-        }
-        container.measure(android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY),
-                android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED));
-        final int to = container.getMeasuredHeight();
-        if (to <= 0 || to == from) {
-            return;
-        }
-        ViewGroup.LayoutParams params = container.getLayoutParams();
-        if (params == null) {
-            return;
-        }
-        params.height = from;
-        container.setLayoutParams(params);
-
-        final android.view.animation.PathInterpolator easing =
-                new android.view.animation.PathInterpolator(0.2f, 0.0f, 0.0f, 1.0f);
-        android.animation.ValueAnimator animator = android.animation.ValueAnimator.ofInt(from, to);
-        animator.setDuration(260L);
-        animator.setInterpolator(easing);
-        animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(android.animation.ValueAnimator animation) {
-                ViewGroup.LayoutParams lp = container.getLayoutParams();
-                if (lp != null) {
-                    lp.height = ((Integer) animation.getAnimatedValue()).intValue();
-                    container.setLayoutParams(lp);
-                }
-            }
-        });
-        animator.addListener(new android.animation.AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(android.animation.Animator animation) {
-                ViewGroup.LayoutParams lp = container.getLayoutParams();
-                if (lp != null) {
-                    lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                    container.setLayoutParams(lp);
-                }
-            }
-        });
-        animator.start();
-    }
+    // v1.10.522：onCreate$lambda$9（切换「全部形状 / 展开全部形状」按钮文案）
+    // 与 toggleShapeGridAnimated()（高度插值动画）随「展开蒙版」按钮一起删除 ——
+    // 现在形状是**左右滑动**的一整排，没有「收起 / 展开」两态。
 
     private static final void onCreate$lambda$11$lambda$10(ConfigActivity this$0, LayoutMode $mode, int[] $layoutChips, View it) {
         Intrinsics.checkNotNullParameter(this$0, "this$0");
@@ -1554,6 +1510,14 @@ public final class ConfigActivity extends I18nActivity {
 
     private static final void onCreate$lambda$16(ConfigActivity this$0, View view, int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8) {
         Intrinsics.checkNotNullParameter(this$0, "this$0");
+        // v1.10.533：OnLayoutChangeListener 在**每次 layout** 都会回调
+        // （只要 LAYOUT_REQUIRED 置位就发，边界没变也发）。532 无条件 updatePreviewBox()，
+        // 于是任何"引起重新布局"的东西都能把预览框的形变按回原形。
+        // 这里只认边界真的变了 —— 但预览框尺寸变化本身不改变 preview_frame 的边界，
+        // 所以它不会再被自身引发的 layout 打回来。
+        if (i == i5 && i2 == i6 && i3 == i7 && i4 == i8) {
+            return;
+        }
         this$0.updatePreviewBox();
     }
 
@@ -1807,15 +1771,17 @@ public final class ConfigActivity extends I18nActivity {
             OutlineSettings.noteWallpaperBg(dominant);
             OutlineColor.Mode mode = OutlineSettings.mode(this);
             int line = OutlineColor.resolve(mode, dominant, OutlineSettings.customRgb(this));
-            float d = getResources().getDisplayMetrics().density;
-            // 与 XML 完全一致：笔画 2dp、虚 6dp、隔 5dp、圆角 2dp（只换颜色，不改观感）
-            android.graphics.drawable.GradientDrawable gd =
-                    new android.graphics.drawable.GradientDrawable();
-            gd.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-            gd.setColor(0x00000000);
-            gd.setCornerRadius(2.0f * d);
-            gd.setStroke(Math.round(2.0f * d), line, 6.0f * d, 5.0f * d);
-            box.setForeground(gd);
+            // v1.10.533：虚线由 PreviewFrameView 自绘（笔画 2dp / 虚 6dp / 隔 5dp / 圆角 2dp 不变），
+            // 只把颜色下发给它 —— 它画的位置是「画面矩形」，不再贴在 preview_box（画布）上。
+            PreviewFrameView dash = this.previewDash;
+            if (dash == null) {
+                View dashView = findViewById(R.id.preview_frame_dash);
+                dash = dashView instanceof PreviewFrameView ? (PreviewFrameView) dashView : null;
+                this.previewDash = dash;
+            }
+            if (dash != null) {
+                dash.setLineColor(line);
+            }
             Diag.warn(this, "W43", "预览虚线取色 档位=" + mode.name()
                     + " 壁纸主色=" + OutlineColor.hex(dominant)
                     + " 虚线=" + OutlineColor.hex(line)
@@ -1829,7 +1795,7 @@ public final class ConfigActivity extends I18nActivity {
         Integer fps = this.sourceFps;
         int srcX10 = this.sourceFpsX10;
         if (srcX10 > 0) {
-            // v1.10.26（需求 4）：默认参数直接落在「识别到的确切刷新率」档位上，
+            // v1.10.26：默认参数直接落在「识别到的确切刷新率」档位上，
             // 33.7fps 就落 34 档（effectiveFpsX10 会还原成 337，不丢精度）；
             // 60fps 素材才被上限 50 截断，这是能力边界不是四舍五入。
             SeekBar seekBar = this.seekFps;
@@ -1993,6 +1959,13 @@ public final class ConfigActivity extends I18nActivity {
     }
 
     private final int previewWidth() {
+        // v1.10.533：**目标画布优先**。形变期间 preview_box 的 LP 已是目标值、但缩放还是旧值，
+        //   ImageView 的 getWidth() 要等下一趟 layout 才是新值 —— 若照它取，切布局瞬间会先渲染
+        //   一张"旧尺寸×新布局"的图（比例不符 → 两边留空），下一趟才纠正，看起来就是闪一下。
+        //   渲染一律按目标画布来，画面只换一次。
+        if (this.previewBoxWidth > 0) {
+            return this.previewBoxWidth;
+        }
         ImageView imageView = this.imgPreview;
         if (imageView == null) {
             Intrinsics.throwUninitializedPropertyAccessException("imgPreview");
@@ -2002,13 +1975,13 @@ public final class ConfigActivity extends I18nActivity {
         if (width > 0) {
             return width;
         }
-        if (this.previewBoxWidth > 0) {
-            return this.previewBoxWidth;
-        }
         return 640;
     }
 
     private final int previewHeight() {
+        if (this.previewBoxHeight > 0) {
+            return this.previewBoxHeight;
+        }
         ImageView imageView = this.imgPreview;
         if (imageView == null) {
             Intrinsics.throwUninitializedPropertyAccessException("imgPreview");
@@ -2018,17 +1991,139 @@ public final class ConfigActivity extends I18nActivity {
         if (height > 0) {
             return height;
         }
-        if (this.previewBoxWidth > 0 && this.previewBoxHeight > 0) {
-            return this.previewBoxHeight;
-        }
         float ratio = previewRatio();
         return RangesKt.coerceIn((int) (640.0f / ratio), 120, 1080);
+    }
+
+    /**
+     * 虚线框的形变：把 {@link PreviewFrameView} 画的那条虚线从"当前矩形"平滑挪到"目标矩形"。
+     *
+     * <h3>为什么不用 LayoutParams 做形变</h3>
+     * 改 {@code preview_box} 的 LayoutParams 会 {@code requestLayout()}；而
+     * {@code preview_frame} 上挂着 {@code OnLayoutChangeListener}，它每次 layout 都会回调
+     * {@code updatePreviewBox()} —— 动画每帧被"取消 → 从当前值重启"，永远走不出第一帧。
+     * 这里的形变**只改一个 RectF + invalidate()**（{@link PreviewFrameView} 自绘），
+     * 一次 layout 都不触发，没有任何东西能打断它。
+     *
+     * <h3>规则</h3>
+     * <ul>
+     *   <li>曲线 {@code cubic-bezier(0.22, 1, 0.36, 1)}（ease-out，对标 AE），时长 300~450ms
+     *       随相对变化量取；</li>
+     *   <li><b>可随时打断</b>：起点永远是"此刻画面上的那个矩形"（{@code dash.frame()}）与
+     *       "此刻画面上的那个缩放"（{@code box.getScaleX()}），连续快切不会闪、不会重置、不会断档；</li>
+     *   <li>画布本身用 {@code scaleX/scaleY}（纯 render transform，不做 layout）跟着走同一个 t，
+     *       所以画面和虚线不会出现"画面跳、边框滑"。</li>
+     *   <li>{@code animate=false}：连续拖动（阴影 / 内容缩放 / 位移）直接落位跟手；
+     *       同一目标重复要求时直接返回，不打断正在跑的形变。</li>
+     * </ul>
+     */
+    private void morphFrame(@NotNull final FrameLayout box, final int boxWidth, final int boxHeight,
+                            @NotNull final android.graphics.RectF target, final int pad,
+                            final boolean animate) {
+        final PreviewFrameView dash = this.previewDash;
+        if (dash == null) {
+            box.setLayoutParams(new FrameLayout.LayoutParams(boxWidth, boxHeight, 17));
+            return;
+        }
+        // 旧状态：**画面上的**画布尺寸 = 当前 LP × 当前缩放（动画中途两者都不等于目标）
+        float oldCanvasWidth = 0.0f;
+        float oldCanvasHeight = 0.0f;
+        if (box.getWidth() > 0) {
+            oldCanvasWidth = (box.getWidth() - pad * 2) * box.getScaleX();
+            oldCanvasHeight = (box.getHeight() - pad * 2) * box.getScaleY();
+        }
+        // 同一个目标被重复要求（layout 监听器每帧都会打进来）→ 绝不重启
+        if (this.boxMorphAnim != null && target.equals(this.boxMorphTarget)
+                && boxWidth == this.boxMorphTargetWidth && boxHeight == this.boxMorphTargetHeight) {
+            return;
+        }
+        android.animation.ValueAnimator running = this.boxMorphAnim;
+        if (running != null) {
+            this.boxMorphAnim = null;
+            running.cancel();
+        }
+        box.setLayoutParams(new FrameLayout.LayoutParams(boxWidth, boxHeight, 17));
+        this.boxMorphTarget.set(target);
+        this.boxMorphTargetWidth = boxWidth;
+        this.boxMorphTargetHeight = boxHeight;
+        if (!dash.hasFrame() || oldCanvasWidth <= 0.0f || oldCanvasHeight <= 0.0f) {
+            // 首次进页：没有"上一帧"可过渡，直接落位
+            box.setScaleX(1.0f);
+            box.setScaleY(1.0f);
+            dash.setFrame(target.left, target.top, target.right, target.bottom);
+            return;
+        }
+        final android.graphics.RectF from = dash.frame();
+        final float scaleX0 = (oldCanvasWidth + pad * 2.0f) / boxWidth;
+        final float scaleY0 = (oldCanvasHeight + pad * 2.0f) / boxHeight;
+        final android.graphics.RectF to = new android.graphics.RectF(target);
+        if (Math.abs(scaleX0 - 1.0f) < 0.002f && Math.abs(scaleY0 - 1.0f) < 0.002f
+                && Math.abs(from.width() - to.width()) < 0.5f
+                && Math.abs(from.height() - to.height()) < 0.5f) {
+            box.setScaleX(1.0f);
+            box.setScaleY(1.0f);
+            dash.setFrame(to.left, to.top, to.right, to.bottom);
+            return;
+        }
+        if (!animate) {
+            // 连续拖动（阴影 / 用户缩放 / 位移）：直接落位跟手。
+            // 上面已经 cancel 掉在跑的动画，所以这里写 scale=1 不会和别的动画打架。
+            box.setScaleX(1.0f);
+            box.setScaleY(1.0f);
+            dash.setFrame(to.left, to.top, to.right, to.bottom);
+            return;
+        }
+        float rel = Math.abs(to.width() - from.width()) / Math.max(1.0f, to.width())
+                + Math.abs(to.height() - from.height()) / Math.max(1.0f, to.height());
+        long duration = Math.max(300L, Math.min(450L, Math.round(300.0 + 150.0 * rel)));
+        box.setScaleX(scaleX0);
+        box.setScaleY(scaleY0);
+        android.animation.ValueAnimator anim = android.animation.ValueAnimator.ofFloat(0.0f, 1.0f);
+        anim.setDuration(duration);
+        anim.setInterpolator(new android.view.animation.PathInterpolator(0.22f, 1.0f, 0.36f, 1.0f));
+        anim.addUpdateListener(a -> {
+            float t = ((Float) a.getAnimatedValue()).floatValue();
+            box.setScaleX(scaleX0 + (1.0f - scaleX0) * t);
+            box.setScaleY(scaleY0 + (1.0f - scaleY0) * t);
+            dash.setFrame(
+                    from.left + (to.left - from.left) * t,
+                    from.top + (to.top - from.top) * t,
+                    from.right + (to.right - from.right) * t,
+                    from.bottom + (to.bottom - from.bottom) * t);
+        });
+        anim.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator a) {
+                if (ConfigActivity.this.boxMorphAnim != a) {
+                    return;   // 已被新动画接管
+                }
+                ConfigActivity.this.boxMorphAnim = null;
+                box.setScaleX(1.0f);
+                box.setScaleY(1.0f);
+                dash.setFrame(to.left, to.top, to.right, to.bottom);
+            }
+        });
+        this.boxMorphAnim = anim;
+        anim.start();
+        // 日志：下一份真机日志里能直接看到"形变真的跑了 + 从哪到哪 + 多久"，
+        // 不用再靠"我看着像没动"来判断（532 就是死在这一步没人能证伪）。
+        // v1.10.536：**不要再借 A05**。A05 的登记含义是「设置项变更」（改完值记一条），
+        // 预览形变是几何动作、和改设置没有关系 —— 借号会让「改了什么设置」这条判断从此不可信。
+        // W54 是本轮新登记的代号，触发条件只有这一处（见 DiagCatalog）。
+        Diag.warn(this, "W54", "预览形变 " + Math.round(from.width()) + "x" + Math.round(from.height())
+                + " → " + Math.round(to.width()) + "x" + Math.round(to.height())
+                + " 用时=" + duration + "ms 布局=" + (this.selectedLayout == null ? "?" : this.selectedLayout.name())
+                + " 铺满=" + !FrameComposer.fitsContent(
+                        this.selectedLayout == null ? LayoutMode.FILL : this.selectedLayout,
+                        this.selectedFitContent));
     }
 
     private final void updatePreviewBox() {
         FrameLayout frame = (FrameLayout) findViewById(R.id.preview_frame);
         FrameLayout area = (FrameLayout) findViewById(R.id.preview_area);
         FrameLayout box = (FrameLayout) findViewById(R.id.preview_box);
+        View dashView = findViewById(R.id.preview_frame_dash);
+        this.previewDash = dashView instanceof PreviewFrameView ? (PreviewFrameView) dashView : null;
         int parentWidth = frame.getWidth();
         int parentHeight = area.getHeight();
         if (parentWidth <= 0 || parentHeight <= 0) {
@@ -2053,20 +2148,61 @@ public final class ConfigActivity extends I18nActivity {
             contentHeight = (int) (parentHeight * 0.88f);
             contentWidth = (int) (contentHeight * ratio);
         }
-        int boxWidth = contentWidth + pad * 2;
-        int boxHeight = contentHeight + pad * 2;
         box.setPadding(pad, pad, pad, pad);
-        box.setLayoutParams(new FrameLayout.LayoutParams(boxWidth, boxHeight, 17));
-        box.requestLayout();
-        // v1.10.1（需求 3）：切布局后按「当前有没有任务」重新显示圆环/进度条
+        boolean canvasChanged = contentWidth != this.previewBoxWidth || contentHeight != this.previewBoxHeight;
+        // 先落字段：syncFrameRect() 用的是「目标画布」，与渲染口径一致
+        this.previewBoxWidth = contentWidth;
+        this.previewBoxHeight = contentHeight;
+        // v1.10.533：虚线框贴「画面矩形」并平滑形变（几何全在 syncFrameRect 里，见下）
+        syncFrameRect(true);
+        // v1.10.1：切布局后按「当前有没有任务」重新显示圆环/进度条
         syncTaskUi();
-        if (contentWidth != this.previewBoxWidth || contentHeight != this.previewBoxHeight) {
-            this.previewBoxWidth = contentWidth;
-            this.previewBoxHeight = contentHeight;
+        if (canvasChanged) {
             box.post(() -> {
                 updatePreviewBox$lambda$24(ConfigActivity.this);
             });
         }
+    }
+
+    /**
+     * 虚线框的落位：**虚线 = 布局框，只随布局变，不随画面。**
+     *
+     * <h3>为什么不能跟着画面</h3>
+     * 画面矩形会随位移 / 内容缩放 / 旋转 / 阴影变化。若虚线跟着它，
+     * 每次拖动或旋转都要重设一次 {@code preview_box} 的 LayoutParams →
+     * 整个窗口 relayout 一次，后果是：拖动过程中的 MOVE 事件被布局打断、
+     * 每转一度就重启一次形变动画（卡顿）、并且框永远追不上画面。
+     *
+     * <h3>契约（无例外）</h3>
+     * 目标矩形只由「布局比例算出的画布尺寸」+「预览区尺寸」决定。画布由 ImageView 在
+     * {@code preview_box} 里 1:1 显示（位图就是画布大小），所以画面不可能超出虚线；
+     * 画面被缩放/位移时只在框**内部**变，框不动。
+     * 因此它**不需要**在渲染路径里被调用：只有换布局 / 预览区尺寸变化时才调。
+     */
+    private final void syncFrameRect(boolean animate) {
+        FrameLayout frame = (FrameLayout) findViewById(R.id.preview_frame);
+        FrameLayout area = (FrameLayout) findViewById(R.id.preview_area);
+        FrameLayout box = (FrameLayout) findViewById(R.id.preview_box);
+        View dashView = findViewById(R.id.preview_frame_dash);
+        this.previewDash = dashView instanceof PreviewFrameView ? (PreviewFrameView) dashView : null;
+        int parentWidth = frame.getWidth();
+        int parentHeight = area.getHeight();
+        int contentWidth = this.previewBoxWidth;
+        int contentHeight = this.previewBoxHeight;
+        if (parentWidth <= 0 || parentHeight <= 0 || contentWidth <= 0 || contentHeight <= 0) {
+            return;
+        }
+        int pad = Math.round(2.0f * getResources().getDisplayMetrics().density);
+        int boxWidth = contentWidth + pad * 2;
+        int boxHeight = contentHeight + pad * 2;
+        // 画面（= 画布 = 布局框）在 preview_area 里的位置：layout_gravity=center，居中后再内缩一个 pad。
+        // v1.10.537：**这里只认画布**。素材比例 / 位移 / 缩放 / 旋转 / 阴影一律不参与 ——
+        // 它们只改变"画布里画出什么"，不改变"框在哪、多大"。
+        float left = ((parentWidth - boxWidth) / 2.0f) + pad;
+        float top = ((parentHeight - boxHeight) / 2.0f) + pad;
+        morphFrame(box, boxWidth, boxHeight,
+                new android.graphics.RectF(left, top, left + contentWidth, top + contentHeight),
+                pad, animate);
     }
 
     private static final void updatePreviewBox$lambda$24(ConfigActivity this$0) {
@@ -2185,7 +2321,7 @@ public final class ConfigActivity extends I18nActivity {
         int fpsSlider = fpsBar.getProgress() + 1;
         int srcX10 = this.sourceFpsX10;
         if (srcX10 > 0 && Math.max(Math.round(srcX10 / 10.0f), 1) == fpsSlider) {
-            // v1.10.26（需求 4）：正好停在源帧率档位 —— 显示确切值（33.7），
+            // v1.10.26：正好停在源帧率档位 —— 显示确切值（33.7），
             // 不再写成 34 让人以为被系统改过（实际播放一直是 33.7）
             fpsLabel.setText(getString(R.string.cfg_fps_source,
                     new Object[]{String.format(java.util.Locale.US, "%.1f", srcX10 / 10.0f)}));
@@ -2515,10 +2651,27 @@ public final class ConfigActivity extends I18nActivity {
             }
             v.setSelected(i == level);
         }
+        // v1.10.533：档位描述**只显示当前这一档** —— 原来是一整段把三档全写在一起，
+        // 选完还得自己在里面找"我选的是哪一档"。现在跟着选中项走，改档即时刷新。
+        TextView hint = (TextView) findViewById(R.id.tv_anim_hint);
+        if (hint != null) {
+            hint.setText(animQualityHintRes(level));
+        }
         View row = findViewById(R.id.row_anim);
         if (row != null) {
             ThemeManager.INSTANCE.styleTree(row);
         }
+    }
+
+    /** v1.10.533：档位描述资源（只描述这一档）。越界按 0 处理，与 WidgetRender 的夹紧口径一致。 */
+    private static int animQualityHintRes(int level) {
+        if (level >= 2) {
+            return R.string.cfg_anim_quality_hint_2;
+        }
+        if (level == 1) {
+            return R.string.cfg_anim_quality_hint_1;
+        }
+        return R.string.cfg_anim_quality_hint_0;
     }
 
     private final void bindPreset(int id, @NotNull float[] params) {
@@ -2751,6 +2904,10 @@ public final class ConfigActivity extends I18nActivity {
     }
 
     private final boolean fitContentLocked() {
+        // v1.10.538：固定比例的「适配画面」保持可点。
+        // 只有下面两档是真的没有可选项，所以仍然灰置显示「由布局决定」：
+        //   原始比例 —— 画布比例本来就等于素材比例，内接即铺满，两种说法是同一件事；
+        //   填充     —— 语义就是裁切填满（v1.10.384 定案）。
         return this.selectedLayout == LayoutMode.FILL || this.selectedLayout == LayoutMode.FIT;
     }
 
@@ -2784,7 +2941,10 @@ public final class ConfigActivity extends I18nActivity {
 
     private static final void refreshPreviewNow$lambda$26(ConfigActivity this$0) {
         Intrinsics.checkNotNullParameter(this$0, "this$0");
-        // v1.10.28（需求 2）：导出中仍要能预览 —— 但必须画「冻结帧」，
+        // v1.10.537：**这里不许碰虚线。** 535/536 在这插过一次 syncFrameRect，于是
+        // 拖内容位置 / 转蒙版（每一格都走这条路径）都会让 preview_box 重新布局并重启形变动画 ——
+        // 「手势拖动废掉」「旋转卡顿」都是它。虚线只跟布局走，布局没变就不该动它。
+        // v1.10.28：导出中仍要能预览 —— 但必须画「冻结帧」，
         // 按 seek 位置重绘会跟着进度走，看着就是前进/倒退
         if (this$0.busy) {
             int frozen = this$0.previewFrozenIndex;
@@ -2847,7 +3007,10 @@ public final class ConfigActivity extends I18nActivity {
         float density = getResources().getDisplayMetrics().density;
         ThemeColors theme = ThemeManager.INSTANCE.colors(this);
         int original = isShape ? this.selectedShapeRotation : this.selectedRotation;
-        SeekBar $this$showRotateDialog_u24lambda_u2430 = new SeekBar(this);
+        // v1.10.523（需求）：「内容 / 蒙版旋转」这条滑条改成**自绘**（AngleSlider）。
+        // 522 那版用 OnTouchListener 独占原生 SeekBar 的手势，结果整条没反应（详情见 AngleSlider 类头）；
+        // 现在自己画、自己吃手势：按下不跳、拖动全程跟手、移出区域也按位移继续更新。
+        AngleSlider $this$showRotateDialog_u24lambda_u2430 = new AngleSlider(this);
         $this$showRotateDialog_u24lambda_u2430.setMax(720);
         $this$showRotateDialog_u24lambda_u2430.setProgress(original + 360);
         final TextView $this$showRotateDialog_u24lambda_u2431 = new TextView(this);
@@ -2881,15 +3044,12 @@ public final class ConfigActivity extends I18nActivity {
         dlg.onThemeChanged(() -> {
             ThemeColors now = ThemeManager.INSTANCE.colors(ConfigActivity.this);
             $this$showRotateDialog_u24lambda_u2431.setTextColor(now.getText());
-            int bar = ThemeManager.INSTANCE.sliderSurfaceColor(ConfigActivity.this, now);
-            $this$showRotateDialog_u24lambda_u2430.setProgressTintList(
-                    android.content.res.ColorStateList.valueOf(bar));
-            $this$showRotateDialog_u24lambda_u2430.setThumbTintList(
-                    android.content.res.ColorStateList.valueOf(bar));
+            $this$showRotateDialog_u24lambda_u2430.applyColors(now);
         });
-        $this$showRotateDialog_u24lambda_u2430.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() { // from class: io.github.animwidget.ConfigActivity.showRotateDialog.1
-            @Override // android.widget.SeekBar.OnSeekBarChangeListener
-            public void onProgressChanged(@Nullable SeekBar seekBar, int value, boolean fromUser) {
+        // v1.10.523：自绘滑条的回调（语义与原来 SeekBar 的三条一一对应）。
+        $this$showRotateDialog_u24lambda_u2430.setListener(new AngleSlider.Listener() {
+            @Override
+            public void onProgressChanged(@org.jetbrains.annotations.NotNull AngleSlider slider, int value, boolean fromUser) {
                 int angle = value - 360;
                 $this$showRotateDialog_u24lambda_u2431.setText(ConfigActivity.this.getString(R.string.cfg_angle, new Object[]{Integer.valueOf(angle)}));
                 dlg.input().setText(String.valueOf(angle));
@@ -2904,13 +3064,13 @@ public final class ConfigActivity extends I18nActivity {
                 }
             }
 
-            @Override // android.widget.SeekBar.OnSeekBarChangeListener
-            public void onStartTrackingTouch(@Nullable SeekBar seekBar) {
+            @Override
+            public void onStartTracking() {
                 dlg.setDragging(true);
             }
 
-            @Override // android.widget.SeekBar.OnSeekBarChangeListener
-            public void onStopTrackingTouch(@Nullable SeekBar seekBar) {
+            @Override
+            public void onStopTracking() {
                 dlg.setDragging(false);
                 ConfigActivity.this.updateRotateButtons();
             }
@@ -2982,75 +3142,135 @@ public final class ConfigActivity extends I18nActivity {
         }
     }
 
+    /**
+     * v1.10.522：**形状蒙版改成左右滑动式**。
+     *
+     * <p>原来是「4 列网格 + 12 个一屏 + 展开/收起按钮」：一屏装不完，用户得先点一下
+     * 「展开全部形状」才能看到剩下的。现在：</p>
+     * <ul>
+     *   <li>所有形状**一次全部列出**（不再有 12 个的截断，也不再有展开态）；</li>
+     *   <li>容器是横向 LinearLayout，外面套 {@code HorizontalScrollView}（布局里）——
+     *       左右滑动看后面的形状，和「系统预设」那一排同一个手势；</li>
+     *   <li>格子尺寸固定 72×58dp，**三行一列**、列间左右滑动（v1.10.523 起为三行）。</li>
+     * </ul>
+     */
     private final void buildShapeGrid() {
-        Iterable iterable;
         LinearLayout container = (LinearLayout) findViewById(R.id.ll_shapes);
         container.removeAllViews();
+        container.setOrientation(LinearLayout.HORIZONTAL);
         Set duplicated = SetsKt.setOf(new ShapeKind[]{ShapeKind.SQUARE_1_1, ShapeKind.ROUND_1_1, ShapeKind.RECT_4_3, ShapeKind.ROUND_4_3, ShapeKind.RECT_3_4, ShapeKind.ROUND_3_4, ShapeKind.RECT_16_9, ShapeKind.RECT_9_16, ShapeKind.RECT_3_2, ShapeKind.RECT_2_3, ShapeKind.RECT_21_9, ShapeKind.RECT_2_1});
         // v1.10.518（用户报「形状里有两个一样的圆形」）：ELLIPSE 的 getAspect() 是 0（随框拉伸），
         // 而选择器格子是方形 —— 于是它和 CIRCLE 画出来是同一个正圆，肉眼就是两个重复项。
-        // 处理：**只从选择器里隐掉**，枚举与渲染都不动 —— 老配置若正用着 ELLIPSE，
-        // 仍然照原样渲染，且勾选状态照旧能显示（下面 head 的逻辑会把它补回来）。
+        // 处理：**只从选择器里隐掉**，枚举与渲染都不动 —— 老配置若正用着 ELLIPSE，仍然照原样渲染。
         Set hiddenShapes = SetsKt.setOf(new ShapeKind[]{ShapeKind.ELLIPSE});
-        ShapeKind[] shapeKindArrValues = ShapeKind.values();
-        Collection destination$iv$iv = new ArrayList();
-        for (ShapeKind shapeKind : shapeKindArrValues) {
+        Collection ordered = new ArrayList();
+        for (ShapeKind shapeKind : ShapeKind.values()) {
             if (!duplicated.contains(shapeKind) && !hiddenShapes.contains(shapeKind)) {
-                destination$iv$iv.add(shapeKind);
+                ordered.add(shapeKind);
             }
         }
-        Iterable ordered = (List) destination$iv$iv;
-        if (this.shapesExpanded) {
-            iterable = ordered;
-        } else {
-            List head = CollectionsKt.toMutableList(CollectionsKt.take(ordered, 12));
-            if (!head.contains(this.selectedShape) && !duplicated.contains(this.selectedShape)
-                    && !hiddenShapes.contains(this.selectedShape)) {
-                if (head.size() >= 12) {
-                    head.remove(head.size() - 1);
-                }
-                head.add(this.selectedShape);
-            }
-            iterable = head;
-        }
-        Iterable list = iterable;
+        ThemeColors theme = ThemeManager.INSTANCE.colors(this);
+        // v1.10.522：形状图形的颜色恒跟随系统，这是唯一口径
+        int shapeColor = systemControlColor();
         float density = getResources().getDisplayMetrics().density;
-        Ref.ObjectRef row = new Ref.ObjectRef();
-        Iterable $this$forEachIndexed$iv = list;
-        int index$iv = 0;
-        for (Object item$iv : $this$forEachIndexed$iv) {
-            int index = index$iv;
-            index$iv++;
-            if (index < 0) {
-                CollectionsKt.throwIndexOverflow();
+        // v1.10.523：形状蒙版改为三行滑动，不再是一长排，而是**三行一列**、
+        // 列与列之间左右滑动 —— 23 个形状在 8 列里就放完，纵向只占 3 行高。
+        int rows = 3;
+        int chipWidth = (int) (72.0f * density);
+        int chipHeight = (int) (58.0f * density);
+        int margin = (int) (3.0f * density);
+        LinearLayout column = null;
+        int index = 0;
+        for (Object item : (List) ordered) {
+            ShapeKind shape = (ShapeKind) item;
+            if (index % rows == 0) {
+                column = new LinearLayout(this);
+                column.setOrientation(LinearLayout.VERTICAL);
+                column.setClipChildren(false);
+                container.addView(column, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             }
-            ShapeKind shape = (ShapeKind) item$iv;
-            if (index % 4 == 0) {
-                LinearLayout $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2437 = new LinearLayout(this);
-                $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2437.setOrientation(0);
-                row.element = $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2437;
-                container.addView((View) row.element);
-            }
-            ThemeColors theme = ThemeManager.INSTANCE.colors(this);
-            int shapeColor = ThemePrefs.INSTANCE.getShapeFollowSystem(this) ? systemControlColor() : theme.getText();
-            ShapeChipView $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440 = new ShapeChipView(this);
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setShape(shape);
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setAccentColor(theme.getPrimary());
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setBgColor(theme.getNeutral());
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setShapeColor(shapeColor);
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setTextColor(theme.getTextMuted());
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setChosen(shape == this.selectedShape);
-            LinearLayout.LayoutParams $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440_u24lambda_u2438 = new LinearLayout.LayoutParams(0, (int) (64 * density), 1.0f);
-            int m = (int) (3 * density);
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440_u24lambda_u2438.setMargins(m, m, m, m);
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setLayoutParams($this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440_u24lambda_u2438);
-            $this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440.setOnClickListener((v2) -> {
+            index++;
+            ShapeChipView chip = new ShapeChipView(this);
+            chip.setShape(shape);
+            chip.setAccentColor(theme.getPrimary());
+            chip.setBgColor(theme.getNeutral());
+            chip.setShapeColor(shapeColor);
+            chip.setTextColor(theme.getTextMuted());
+            chip.setChosen(shape == this.selectedShape);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(chipWidth, chipHeight);
+            lp.setMargins(margin, margin, margin, margin);
+            chip.setLayoutParams(lp);
+            chip.setOnClickListener((v2) -> {
                 buildShapeGrid$lambda$41$lambda$40$lambda$39(ConfigActivity.this, shape, v2);
             });
-            LinearLayout linearLayout = (LinearLayout) row.element;
-            if (linearLayout != null) {
-                linearLayout.addView($this$buildShapeGrid_u24lambda_u2441_u24lambda_u2440);
+            if (column != null) {
+                column.addView(chip);
             }
+        }
+        // v1.10.525：格子重建完 → 把选中框摆到当前选中的格子上（点击时播动画，其余情况直接落位）
+        syncShapeFrame(this.shapeFrameAnimate);
+        this.shapeFrameAnimate = false;
+    }
+
+    /**
+     * v1.10.526：把选中框交给**容器自己画**。
+     *
+     * <p>525 那版是「另一个浮层 View + post 回读取格子坐标」，而格子刚重建还没测量，
+     * 读到的矩形是 (0,0,0,0)，框一帧都没出现。现在只把"谁被选中"告诉
+     * {@link ShapeGridHost}，矩形由它在 dispatchDraw 里现场算 —— 没有时序问题。</p>
+     *
+     * @param animate true = 从上一格平滑移过来（由慢到快）；false = 直接落位
+     */
+    private void syncShapeFrame(boolean animate) {
+        LinearLayout host = (LinearLayout) findViewById(R.id.ll_shapes);
+        if (host == null) {
+            return;
+        }
+        android.view.ViewParent holder = host.getParent();
+        if (!(holder instanceof ShapeGridHost)) {
+            return;
+        }
+        ShapeGridHost frameHost = (ShapeGridHost) holder;
+        frameHost.setAccent(ThemeManager.INSTANCE.colors(this).getPrimary());
+        frameHost.setChosen(this.selectedShape, animate);
+        // 选中的格格在视口外时横向滚进来（等格子量完尺寸再滚，post 一次就够 —— 这里只读宽度）
+        frameHost.post(() -> {
+            View chip = frameHost.findChosenChip();
+            // 诊断只在**失败**时打（找到就不再刷屏）：这条当初正是定位 526 的钥匙，
+            // 下次再出问题直接看 A05 就知道是"没找到格子"还是"格子没尺寸"。
+            if (chip == null) {
+                Diag.warn(this, "A05", "形状选中框 形状=" + this.selectedShape + " 格子=未找到");
+            }
+            if (chip != null) {
+                scrollShapeIntoView(host, chip);
+            }
+        });
+    }
+
+    /**
+     * v1.10.525（交互）：选中的格子在视口外时把它**平滑滚进来**（横向那一排）。
+     * 只滚到"刚好完整可见"，不做居中 —— 否则点相邻格子时整排会来回抖。
+     */
+    private void scrollShapeIntoView(@NotNull View host, @NotNull View chip) {
+        android.view.ViewParent p = host.getParent();
+        if (p instanceof android.view.ViewGroup) {
+            p = p.getParent();
+        }
+        if (!(p instanceof android.widget.HorizontalScrollView)) {
+            return;
+        }
+        android.widget.HorizontalScrollView scroller = (android.widget.HorizontalScrollView) p;
+        int pad = Math.round(6.0f * getResources().getDisplayMetrics().density);
+        View column = (View) chip.getParent();
+        int left = host.getLeft() + (column != null ? column.getLeft() : 0) + chip.getLeft();
+        int right = left + chip.getWidth();
+        int view = scroller.getScrollX();
+        int w = scroller.getWidth();
+        if (left - pad < view) {
+            scroller.smoothScrollTo(Math.max(0, left - pad), 0);
+        } else if (right + pad > view + w) {
+            scroller.smoothScrollTo(Math.max(0, right + pad - w), 0);
         }
     }
 
@@ -3105,6 +3325,8 @@ public final class ConfigActivity extends I18nActivity {
             return
         */
         this$0.selectedShape = $shape;
+        // v1.10.525：点在某一格 = 选中框要"从旧格子滑到新格子"
+        this$0.shapeFrameAnimate = true;
         this$0.buildShapeGrid();
         this$0.schedulePreview();
         int count = 0;
@@ -3119,6 +3341,16 @@ public final class ConfigActivity extends I18nActivity {
                 bar = null;
             }
             this$0.renderPreviewFrameAt(bar.getProgress());
+        }
+    }
+
+    /** 当前安装包的 versionName（日志用；取不到就写问号，不抛异常）。 */
+    @NotNull
+    private String appVersion() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Throwable t) {
+            return "?";
         }
     }
 
@@ -3256,7 +3488,7 @@ public final class ConfigActivity extends I18nActivity {
       if (animRow != null) {
          animRow.setVisibility(kind == MediaKind.IMAGE ? View.GONE : View.VISIBLE);
       }
-      // v1.10.26（需求 2）：静态图片没有帧率概念 —— 「播放帧率」参数块整个移除（连分隔线一起），
+      // v1.10.26：静态图片没有帧率概念 —— 「播放帧率」参数块整个移除（连分隔线一起），
       // 播放进度条同时灰置（原来只有滑块被禁用，进度条还是亮的）
       this.setFpsBlockVisible(kind != MediaKind.IMAGE);
       SeekBar playbackSeek = this.seekPlayback;
@@ -3267,7 +3499,7 @@ public final class ConfigActivity extends I18nActivity {
    }
 
    /**
-    * v1.10.26（需求 2）：按素材类型显示/移除「播放帧率」参数块。
+    * v1.10.26：按素材类型显示/移除「播放帧率」参数块。
     * 该块在布局里没有 id，用 tv_fps 的父容器定位，顺带把紧邻的分隔线一起收起来
     * （否则卡片里会出现两条挨着的横线）。
     */
@@ -3675,7 +3907,7 @@ public final class ConfigActivity extends I18nActivity {
         // v1.8.18：GIF 页选了视频 → 直接拒绝（用户要求：GIF 页绝不能出现视频）。
         String sniffed = MediaSniff.sniff(this, uri);
         Diag.warn(this, "M04", "嗅探结果: " + sniffed);
-        // v1.10.28（需求 3/4）：GIF 页改成「不是动图就拒」——
+        // v1.10.28：GIF 页改成「不是动图就拒」——
         // 原来只比对 video/image 两个字符串，嗅探不出来的格式（null）会直接放行，
         // 于是静态图能混进动图页。现在用「嗅探 + ImageDecoder 兜底」统一判定。
         boolean gifPageNotAnim = resolved == MediaKind.GIF
@@ -4911,7 +5143,7 @@ public final class ConfigActivity extends I18nActivity {
         // 任何其他代码路径都改不回来（下次调用 syncTaskUi 又会纠正）
         SeekBar playbackSeek = this.seekPlayback;
         if (playbackSeek != null) {
-            // v1.10.26（需求 2/3）：永久不可拖动，只用透明度表达「能不能看」——
+            // v1.10.26：永久不可拖动，只用透明度表达「能不能看」——
             // 任务中 / 静态图片 / 帧不足一律灰置
             playbackSeek.setAlpha(playbackSeekAlpha());
         }
@@ -5328,7 +5560,7 @@ public final class ConfigActivity extends I18nActivity {
         }
     }
 
-    /** 导出进度：只写状态，节流 100ms 再刷界面（需求 4）；gen 不符（旧任务）直接丢弃。 */
+    /** 导出进度：只写状态，节流 100ms 再刷界面；gen 不符（旧任务）直接丢弃。 */
     final void onParseProgress(int done, int total, int gen) {
         if (gen != this.exportGeneration || this.exportCancelled) {
             return;
@@ -5949,8 +6181,6 @@ private final void openContentGestureEditor() {
             R.id.btn_adapt,
             R.id.ly_scroll, R.id.ll_shapes,
             R.id.btn_fit_content,          // 「自动适配」会改画布口径 → 锁
-            // 注意：「全部形状（展开/收起）」(btn_shapes_toggle) **不锁** —— 用户明确要求它随时能展开收起，
-            // 它只切换显示，不改任何写入的参数（形状本身由 ll_shapes 里的格子决定，格子是锁住的）。
             R.id.seek_fps, R.id.seek_quality, R.id.seek_edge,
             R.id.seek_alpha, R.id.seek_shadow, R.id.seek_scale,
             // 「阴影自定义」(btn_shadow_curve) **不锁** —— 用户要求它能展开/收起；
@@ -7032,7 +7262,7 @@ private final void openContentGestureEditor() {
         // v1.8.10：同上 —— 旧帧可能还在渲染线程手里，recycle 会直接抛
         // “Canvas: trying to use a recycled bitmap”。丢掉引用即可。
         int frameTotal = $result != null && $result.getFrames() != null ? $result.getFrames().size() : 0;
-        // v1.10.26（需求 5）：画质链路证据 —— 源 / 预览帧 / 画布三档尺寸一次打全。
+        // v1.10.26：画质链路证据 —— 源 / 预览帧 / 画布三档尺寸一次打全。
         // 「预览帧 ≤ 画布」= 上屏时被放大 = 肉眼发虚；反过来才是正常（缩小）。
         try {
             if (frameTotal > 0) {
@@ -7133,7 +7363,7 @@ private final void openContentGestureEditor() {
             }
             // v1.10.25：任务百分比文字用主色（缓存，避免每 100ms 再算一次主题）
             this.taskTextColor = c.getPrimary();
-            // v1.10.26（需求 3）：播放进度条永久 disabled（不可拖动），
+            // v1.10.26：播放进度条永久 disabled（不可拖动），
             // 不显式给 tint 会用系统 disabled 色，正常播放时也整条发灰
             SeekBar playbackSeek = this.seekPlayback;
             if (playbackSeek != null) {
@@ -7357,7 +7587,7 @@ private final void openContentGestureEditor() {
                 // v1.10.50：同一个写入方（任务中会被它自己拒掉）
                 ConfigActivity.this.publishPlaybackPosition(index,
                         ConfigActivity.this.formatTime((index * 1000L) / Math.max(fps, 1)));
-                // v1.10.1（需求 2）：实测帧率汇总，3 秒一条（不逐帧写日志）
+                // v1.10.1：实测帧率汇总，3 秒一条（不逐帧写日志）
                 if (now - ConfigActivity.this.fpsWindowStart >= 3000L) {
                     long span = Math.max(now - ConfigActivity.this.fpsWindowStart, 1L);
                     float measured = ConfigActivity.this.fpsWindowFrames * 1000.0f / span;
@@ -7864,7 +8094,7 @@ private final void openContentGestureEditor() {
             // 与上次抽帧参数一致（程序性赋值会走到这），不重复解析
             return;
         }
-        // v1.10.1（需求 3）：导出进行中改了需要重新解析的参数 →
+        // v1.10.1：导出进行中改了需要重新解析的参数 →
         // 先真正取消旧任务（连暂存一起删），再用最新参数重开，圆环归 0、再次提示。
         if (this.busy) {
             Diag.warn(this, "T03", "导出中修改解析参数 → 取消旧任务并重开 fps=" + fps + " edge=" + edge);
@@ -8042,7 +8272,7 @@ private final void openContentGestureEditor() {
 
     /* JADX INFO: Access modifiers changed from: private */
     public final void schedulePreview() {
-        // v1.10.28（需求 2）：导出期间不冻结画面 —— 切布局/形状/蒙版必须立刻能看到效果。
+        // v1.10.28：导出期间不冻结画面 —— 切布局/形状/蒙版必须立刻能看到效果。
         // 做法：永远重绘「导出开始时的那一帧」（previewFrozenIndex），帧号不变 →
         // 既不会前进/倒退，又能实时预览。
         if (this.busy) {

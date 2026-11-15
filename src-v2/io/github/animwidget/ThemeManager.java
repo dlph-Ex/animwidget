@@ -763,7 +763,7 @@ public final class ThemeManager {
     }
 
     private final void paint(View view, ThemeColors c) {
-        // v1.10.98（需求 4）：换肤/刷新时顺手把字体铺上（幂等，只在新字体的第一次生效）
+        // v1.10.98：换肤/刷新时顺手把字体铺上（幂等，只在新字体的第一次生效）
         Fonts.applyOne(view);
 
         // v1.10.166（反馈「没有实时更新」）：**自绘控件在这里统一上色**。
@@ -805,6 +805,12 @@ public final class ThemeManager {
         }
         if (view instanceof IconTileView) {
             ((IconTileView) view).applyColors(c);
+            return;
+        }
+        // v1.10.523：设置页左上角的返回按钮（自绘圆底 + 箭头）。
+        // 和 IconTileView 同一条链：不进来就会停在"建视图那一刻"的配色。
+        if (view instanceof BackButton) {
+            ((BackButton) view).applyColors(c);
             return;
         }
         // v1.10.221：阴影曲线面板也是自绘的（曲线、控制点、网格全在 onDraw 里现算）。
@@ -911,7 +917,7 @@ public final class ThemeManager {
 
     private final void styleText(TextView view, ThemeColors c) {
         Object tag = view.getTag();
-        // v1.10.98（需求 1）：首页降权两级 —— dim = 次级信息，dim2 = 说明文字
+        // v1.10.98：首页降权两级 —— dim = 次级信息，dim2 = 说明文字
         if (Intrinsics.areEqual(tag, "dim")) {
             view.setTextColor(withAlpha(c.getText(), 0.62f));
             return;
@@ -1059,6 +1065,15 @@ public final class ThemeManager {
             view.setTextColor(c.getText());
             return;
         }
+        // v1.10.522：**分组胶囊** —— 外侧大圆角、相邻内侧小圆角。
+        // 竖向（group_pill_first / middle / last）用于「调试与记录」那三格；
+        // 横向（group_pill_left / right）用于「展开 / 收起」这一对。
+        int groupSlot = groupSlotOf(tag);
+        if (groupSlot >= 0) {
+            view.setBackground(groupedPill(view.getContext(), groupSlot, !isHorizontalGroup(tag)));
+            view.setTextColor(c.getText());
+            return;
+        }
         if (Intrinsics.areEqual(tag, "ghost_text")) {
             view.setBackground((android.graphics.drawable.Drawable) null);
             view.setElevation(0.0f);
@@ -1183,6 +1198,120 @@ public final class ThemeManager {
         $this$rounded_u24lambda_u241.setColor(color);
         $this$rounded_u24lambda_u241.setCornerRadius(radiusDp * density);
         return $this$rounded_u24lambda_u241;
+    }
+
+    // ================================================================ v1.10.522 分组圆角
+
+    /** 分组里的位置：单独一个（四角都大）。 */
+    public static final int GROUP_SINGLE = 0;
+    /** 分组里的第一个（上 / 左端）。 */
+    public static final int GROUP_FIRST = 1;
+    /** 分组里的中间项（相邻两侧的角都小）。 */
+    public static final int GROUP_MIDDLE = 2;
+    /** 分组里的最后一个（下 / 右端）。 */
+    public static final int GROUP_LAST = 3;
+
+    /** 按钮组的外侧圆角（dp）。 */
+    public static final float GROUP_PILL_OUTER_DP = 18.0f;
+    /** 按钮组的**相邻内侧**圆角（dp）—— 外侧大、相邻内侧小，拼起来才是「一个容器」。 */
+    public static final float GROUP_PILL_INNER_DP = 8.0f;
+
+    /**
+     * v1.10.522：**分组圆角（Container Shape）**，外侧大、相邻内侧小。
+     *
+     * <p>一组相邻控件拼成一个容器：**最外侧的角大、相邻的内侧角小**。
+     * 竖向排列时「上端两角 / 下端两角」是外侧，横向排列时「左端两角 / 右端两角」是外侧；
+     * 中间项四角一律取内侧小圆角。</p>
+     *
+     * <p>只画「面」：颜色由调用方给（性能卡的极淡底、按钮的中性底各用各的），
+     * 这里不做任何对比度推导 —— 与 {@link #rounded} 同一个口径，方便逐处替换。</p>
+     *
+     * @param slot     {@link #GROUP_SINGLE} / {@link #GROUP_FIRST} / {@link #GROUP_MIDDLE} / {@link #GROUP_LAST}
+     * @param vertical true = 上下叠（竖排按钮、卡片里的行）；false = 左右并排（两颗胶囊、横排卡片）
+     * @param outerDp  外侧圆角（dp）
+     * @param innerDp  相邻内侧圆角（dp）
+     */
+    @NotNull
+    public final GradientDrawable grouped(@NotNull Context context, int color, int slot,
+                                          boolean vertical, float outerDp, float innerDp) {
+        Intrinsics.checkNotNullParameter(context, "context");
+        float density = context.getResources().getDisplayMetrics().density;
+        float o = outerDp * density;
+        float i = innerDp * density;
+        float tl;
+        float tr;
+        float br;
+        float bl;
+        if (vertical) {
+            switch (slot) {
+                case GROUP_FIRST:
+                    tl = o; tr = o; br = i; bl = i;
+                    break;
+                case GROUP_LAST:
+                    tl = i; tr = i; br = o; bl = o;
+                    break;
+                case GROUP_MIDDLE:
+                    tl = i; tr = i; br = i; bl = i;
+                    break;
+                default:
+                    tl = o; tr = o; br = o; bl = o;
+                    break;
+            }
+        } else {
+            switch (slot) {
+                case GROUP_FIRST:
+                    tl = o; tr = i; br = i; bl = o;
+                    break;
+                case GROUP_LAST:
+                    tl = i; tr = o; br = o; bl = i;
+                    break;
+                case GROUP_MIDDLE:
+                    tl = i; tr = i; br = i; bl = i;
+                    break;
+                default:
+                    tl = o; tr = o; br = o; bl = o;
+                    break;
+            }
+        }
+        GradientDrawable d = new GradientDrawable();
+        d.setColor(color);
+        d.setCornerRadii(new float[]{tl, tl, tr, tr, br, br, bl, bl});
+        return d;
+    }
+
+    /** 按钮组的一格：中性底 + 正文色字（竖向 3 格 / 横向 2 格都走这里）。 */
+    @NotNull
+    public final GradientDrawable groupedPill(@NotNull Context context, int slot, boolean vertical) {
+        ThemeColors c = colors(context);
+        return grouped(context, pillSoftColor(c), slot, vertical,
+                GROUP_PILL_OUTER_DP, GROUP_PILL_INNER_DP);
+    }
+
+    /** tag → 分组位置；不是分组 tag 返回 -1。 */
+    public static int groupSlotOf(@Nullable Object tag) {
+        if (!(tag instanceof String)) {
+            return -1;
+        }
+        String t = (String) tag;
+        if ("group_pill_first".contentEquals(t) || "group_pill_left".contentEquals(t)) {
+            return GROUP_FIRST;
+        }
+        if ("group_pill_middle".contentEquals(t)) {
+            return GROUP_MIDDLE;
+        }
+        if ("group_pill_last".contentEquals(t) || "group_pill_right".contentEquals(t)) {
+            return GROUP_LAST;
+        }
+        return -1;
+    }
+
+    /** 分组 tag 是不是「横向成对」的那两个（left / right）。 */
+    public static boolean isHorizontalGroup(@Nullable Object tag) {
+        if (!(tag instanceof String)) {
+            return false;
+        }
+        String t = (String) tag;
+        return "group_pill_left".contentEquals(t) || "group_pill_right".contentEquals(t);
     }
 
     @NotNull

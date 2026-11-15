@@ -44,6 +44,16 @@ public final class IconTileView extends View {
     public static final int ICON_MODE = 1;
     /** 性能：仪表盘（上弧 + 指针 + 三刻度）。 */
     public static final int ICON_PERF = 2;
+    /**
+     * v1.10.522：**配色方案** —— 调色板。
+     *
+     * <p>上一版是 {@code TextView} 里的 🎨：emoji 由系统字体决定，深色下会被染成彩色、
+     * 尺寸与基线不受控，放在「界面语言 / 系统模式 / 性能」这一列里明显不是一个家族。
+     * 现在改为矢量路径：板身取参考 #1（Material Symbols「palette」outline）的
+     * 「椭圆板 + 拇指孔」骨架，颜料点换成自绘的三点布局（见 {@link #drawPalette}），
+     * 线宽/端点/网格与另外三个图标完全同一套。</p>
+     */
+    public static final int ICON_PALETTE = 3;
 
     /** 设计网格边长（单位）。 */
     private static final float GRID = 24.0f;
@@ -57,6 +67,8 @@ public final class IconTileView extends View {
     private final Paint solid = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF oval = new RectF();
     private final Path path = new Path();
+    /** v1.10.522：调色板拇指孔的临时路径（与 path 做差集，得到"咬掉一口"的板身）。 */
+    private final Path thumb = new Path();
 
     private int icon = ICON_LANGUAGE;
     private int tint = 0xFF888888;
@@ -113,6 +125,8 @@ public final class IconTileView extends View {
             this.icon = ICON_MODE;
         } else if ("perf".contentEquals(kind)) {
             this.icon = ICON_PERF;
+        } else if ("palette".contentEquals(kind)) {
+            this.icon = ICON_PALETTE;
         } else {
             this.icon = ICON_LANGUAGE;
         }
@@ -146,6 +160,8 @@ public final class IconTileView extends View {
             drawMode(canvas);
         } else if (this.icon == ICON_PERF) {
             drawGauge(canvas);
+        } else if (this.icon == ICON_PALETTE) {
+            drawPalette(canvas);
         } else {
             drawGlobe(canvas);
         }
@@ -176,6 +192,32 @@ public final class IconTileView extends View {
         this.path.close();
         canvas.drawPath(this.path, this.solid);
         canvas.drawCircle(cx, cy, r, this.line);
+    }
+
+    /**
+     * v1.10.522：调色板 —— **参考骨架 + 自绘元素**的混合。
+     *
+     * <ul>
+     *   <li><b>骨架（取自参考 #1，Material Symbols「palette」outline）</b>：
+     *       椭圆板身 + 右下一处「拇指孔」的缺口，用 {@link Path#op} 做差集切出来；</li>
+     *   <li><b>自绘部分</b>：三个实心颜料点，位置按「左上 → 上 → 左下」的不等边三角形摆
+     *       （参考图是四点在正中排成一排），这样 24dp 里既不糊成一团，也不像一串省略号；</li>
+     *   <li>线宽与端点沿用类里那一套（1.9dp / ROUND），和地球、明暗、仪表同一个家族。</li>
+     * </ul>
+     */
+    private void drawPalette(@NotNull Canvas canvas) {
+        this.oval.set(12.0f - 8.7f, 12.2f - 7.5f, 12.0f + 8.7f, 12.2f + 7.5f);
+        this.path.reset();
+        this.path.addOval(this.oval, Path.Direction.CW);
+        this.thumb.reset();
+        this.thumb.addCircle(17.2f, 16.1f, 2.25f, Path.Direction.CW);
+        // 差集：整块椭圆减掉拇指孔 = 板身（缺口落在右下边缘，正是握板的位置）
+        this.path.op(this.thumb, Path.Op.DIFFERENCE);
+        canvas.drawPath(this.path, this.line);
+        // 三个颜料点（自绘）：实心圆，半径 1.5（网格单位）= 24dp 内容里约 1.5dp
+        canvas.drawCircle(8.5f, 9.9f, 1.5f, this.solid);
+        canvas.drawCircle(13.3f, 8.4f, 1.5f, this.solid);
+        canvas.drawCircle(8.9f, 14.8f, 1.5f, this.solid);
     }
 
     /** 仪表：下开口的上弧 + 指向右上 45° 的指针 + 三刻度 + 中心点。 */

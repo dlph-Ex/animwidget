@@ -62,6 +62,8 @@ public final class LayoutPickerView extends HorizontalScrollView {
     private final Paint paint = new Paint(1);
     private final RectF rect = new RectF();
     private final Path arrowPath = new Path();
+    /** v1.10.522：卡片底的「分组圆角」路径（四角半径可以各不相同）。 */
+    private final Path cardPath = new Path();
 
     private LayoutMode selected = LayoutMode.FIT;
     private float mediaRatio = 1.0f;
@@ -110,8 +112,15 @@ public final class LayoutPickerView extends HorizontalScrollView {
         int cardWidth = (int) (146.0f * density);
         int cardHeight = (int) (150.0f * density);
         int gap = (int) (8.0f * density);
-        for (LayoutMode mode : LayoutMode.values()) {
-            Card card = new Card(context, mode);
+        LayoutMode[] all = LayoutMode.values();
+        for (int index = 0; index < all.length; index++) {
+            LayoutMode mode = all[index];
+            // v1.10.522：卡片之间改**分组圆角** —— 最左/最右两张的外侧角大（18dp），
+            // 相邻的内侧角小（8dp），中间的卡片四角都是 8dp。
+            int slot = all.length <= 1 ? ThemeManager.GROUP_SINGLE
+                    : (index == 0 ? ThemeManager.GROUP_FIRST
+                    : (index == all.length - 1 ? ThemeManager.GROUP_LAST : ThemeManager.GROUP_MIDDLE));
+            Card card = new Card(context, mode, slot);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(cardWidth, cardHeight);
             lp.rightMargin = gap;
             row.addView(card, lp);
@@ -218,6 +227,10 @@ public final class LayoutPickerView extends HorizontalScrollView {
     private final class Card extends View {
 
         final LayoutMode mode;
+        /** v1.10.522：在横排里的位置（决定四个角哪个大）。 */
+        final int slot;
+        /** 每张卡自己的四角半径（分组圆角），onDraw 里直接用。 */
+        private final float[] cornerRadii = new float[8];
 
         /** v1.10.95：layoutBlocks() 算出来的两块矩形（画的时候直接用）。 */
         private float bkX;
@@ -229,9 +242,10 @@ public final class LayoutPickerView extends HorizontalScrollView {
         private float frW;
         private float frH;
 
-        Card(Context context, LayoutMode mode) {
+        Card(Context context, LayoutMode mode, int slot) {
             super(context);
             this.mode = mode;
+            this.slot = slot;
         }
 
         private float downX;
@@ -287,25 +301,52 @@ public final class LayoutPickerView extends HorizontalScrollView {
             float w = getWidth();
             float h = getHeight();
             float radius = 18.0f * density;
+            // v1.10.522：分组圆角 —— 外侧 18dp、相邻内侧 8dp。
+            // 横排里「第一个」只圆左端两角、「最后一个」只圆右端两角，中间四角 8dp。
+            float outer = radius;
+            float inner = 8.0f * density;
+            float tl;
+            float tr;
+            float br;
+            float bl;
+            if (slot == ThemeManager.GROUP_FIRST) {
+                tl = outer; tr = inner; br = inner; bl = outer;
+            } else if (slot == ThemeManager.GROUP_LAST) {
+                tl = inner; tr = outer; br = outer; bl = inner;
+            } else if (slot == ThemeManager.GROUP_MIDDLE) {
+                tl = inner; tr = inner; br = inner; bl = inner;
+            } else {
+                tl = outer; tr = outer; br = outer; bl = outer;
+            }
+            this.cornerRadii[0] = tl; this.cornerRadii[1] = tl;
+            this.cornerRadii[2] = tr; this.cornerRadii[3] = tr;
+            this.cornerRadii[4] = br; this.cornerRadii[5] = br;
+            this.cornerRadii[6] = bl; this.cornerRadii[7] = bl;
 
             // 卡片底 + 选中描边
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(isSelected ? c.getSurface() : c.getNeutral());
             rect.set(0.0f, 0.0f, w, h);
-            canvas.drawRoundRect(rect, radius, radius, paint);
+            cardPath.reset();
+            cardPath.addRoundRect(rect, this.cornerRadii, Path.Direction.CW);
+            canvas.drawPath(cardPath, paint);
             if (isSelected) {
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeWidth(2.0f * density);
                 paint.setColor(c.getPrimary());
                 rect.set(1.0f * density, 1.0f * density, w - 1.0f * density, h - 1.0f * density);
-                canvas.drawRoundRect(rect, radius, radius, paint);
+                cardPath.reset();
+                cardPath.addRoundRect(rect, this.cornerRadii, Path.Direction.CW);
+                canvas.drawPath(cardPath, paint);
             }
 
             if (pressed) {
                 paint.setStyle(Paint.Style.FILL);
                 paint.setColor(0x22FFFFFF);
                 rect.set(0.0f, 0.0f, w, h);
-                canvas.drawRoundRect(rect, radius, radius, paint);
+                cardPath.reset();
+                cardPath.addRoundRect(rect, this.cornerRadii, Path.Direction.CW);
+                canvas.drawPath(cardPath, paint);
             }
 
             // v1.10.174（反馈 图1）：布局卡片的两行字**跟随字号档位**，并且不再贴底。
@@ -427,7 +468,7 @@ public final class LayoutPickerView extends HorizontalScrollView {
             //   原始比例 = 素材比例（默认 3:2）+ ↗↙ 箭头
             //   填充     = 组件比例 + 剪刀（**只在这一块上**，不再跨两块）
             if (mode == LayoutMode.FIT || mode == LayoutMode.FILL) {
-                drawSingleBlock(canvas, area, density, c, mode == LayoutMode.FILL);
+                drawSingleBlock(canvas, area, density, c, mode == LayoutMode.FILL, selected);
                 return;
             }
             float frameRatio = mode.getRatio() > 0.0f ? mode.getRatio() : widgetRatio;
@@ -442,10 +483,8 @@ public final class LayoutPickerView extends HorizontalScrollView {
             paint.setStyle(Paint.Style.FILL);
 
             // ---- 后景
-            paint.setColor(dark ? COLOR_PHOTO_DARK : COLOR_PHOTO_LIGHT);
-            if (ThemePrefs.INSTANCE.getShapeFollowSystem(getContext())) {
-                paint.setColor(systemControlColor(c));
-            }
+            // v1.10.522：形状图形的颜色恒跟随系统，只有这一种口径
+            paint.setColor(systemControlColor(c));
             rect.set(this.bkX, this.bkY, this.bkX + this.bkW, this.bkY + this.bKH);
             canvas.drawRoundRect(rect, corner, corner, paint);
 
@@ -468,7 +507,8 @@ public final class LayoutPickerView extends HorizontalScrollView {
          * · 原始比例：比例 = 素材比例（未知或 <0.4 / >2.5 时用 3:2），图形里画 ↗↙ 箭头；
          * · 填充：比例 = 组件比例，图形里画「剪刀」——**剪刀只在这一个图层上**，不再跨两块。
          */
-        private void drawSingleBlock(Canvas canvas, RectF area, float density, ThemeColors c, boolean fill) {
+        private void drawSingleBlock(Canvas canvas, RectF area, float density, ThemeColors c, boolean fill,
+                                   boolean selected) {
             float ratio;
             if (fill) {
                 ratio = widgetRatio > 0.0f ? widgetRatio : DEFAULT_MEDIA_RATIO;
@@ -493,17 +533,17 @@ public final class LayoutPickerView extends HorizontalScrollView {
             float corner = 10.0f * density;
             boolean dark = isDarkColor(c.getBackground());
 
-            int blockColor;
-            if (fill) {
-                // 填充沿用原来的浅灰块（跟随系统控件色）
-                blockColor = dark ? COLOR_PHOTO_DARK : COLOR_PHOTO_LIGHT;
-                if (ThemePrefs.INSTANCE.getShapeFollowSystem(getContext())) {
-                    blockColor = systemControlColor(c);
-                }
-            } else {
-                // 原始比例：主题色混白的浅色块
-                blockColor = mixToWhite(c.getPrimary(), dark ? 0.74f : 0.80f);
-            }
+            // v1.10.525：**「原始比例」和「填充」这两张单块卡用同一条配色规则**。
+            //
+            //   · 选中   = 主色混白（比 522 更深一档：浅色 0.62 / 深色 0.55）——
+            //             522 用 0.80 调出来的那一块几乎和卡片白底同色，选中了也看不出来；
+            //   · 未选中 = 系统控件前景色（中性灰）—— 522 用「辅助色混白」得到的是桃色，
+            //             印在灰色的未选中卡片上像"这一格还亮着"。
+            //
+            // 两张卡因此完全对称：不看边框，只看图形颜色就能判断谁被选中。
+            final int blockColor = selected
+                    ? mixToWhite(c.getPrimary(), dark ? 0.55f : 0.62f)
+                    : systemControlColor(c);
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(blockColor);
             rect.set(x, y, x + w, y + h);
@@ -512,7 +552,10 @@ public final class LayoutPickerView extends HorizontalScrollView {
             if (fill) {
                 drawScissors(canvas, x, y, w, h, density, blockColor);
             } else {
-                drawStretchArrows(canvas, x, y, w, h, density, mixToBlack(blockColor, 0.45f));
+                // v1.10.525：未选中时底色是深灰，原来那支「按底色压暗」的墨会看不见 ——
+                // 与剪刀同一口径：底色暗 → 用亮墨；底色亮 → 用压暗的墨。
+                int ink = isDarkColor(blockColor) ? 0x8CFFFFFF : mixToBlack(blockColor, 0.45f);
+                drawStretchArrows(canvas, x, y, w, h, density, ink);
             }
         }
 
@@ -687,9 +730,12 @@ public final class LayoutPickerView extends HorizontalScrollView {
             // 尖端到中心 = arm。v1.10.180（反馈 1）：0.44 → **0.42**。
             // 图形已经缩到卡片宽的约 60%，箭头再按 0.44 会紧贴图形四边；
             // 0.42 时两支箭头占短边约 84%，四周还留 8% 的呼吸，既不贴边也不显小。
-            float arm = Math.min(min * 0.42f, min * 0.5f - stroke * 0.75f);
+            // v1.10.522：符号再小一档、并且**保底留边**。
+            // 0.42 → 0.34：箭头尖到图形短边中心只有 16% 的余量，素材比例再极端（很扁/很竖）
+            // 也不会顶到卡片边缘；第二项用 2.2 倍线宽而不是 0.75 倍，保证描边外侧还有一圈空。
+            float arm = Math.min(min * 0.34f, min * 0.5f - stroke * 2.2f);
             if (arm < 2.0f * density) {
-                arm = Math.max(min * 0.28f, 1.0f);   // 极小图形的兜底（仍按比例，不越界）
+                arm = Math.max(min * 0.22f, 1.0f);   // 极小图形的兜底（仍按比例，不越界）
             }
             float barb = arm * 0.55f;    // 尾比身短：尾 : 身 ≈ 0.7
             paint.setStyle(Paint.Style.STROKE);

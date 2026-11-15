@@ -4,6 +4,7 @@
     <item type="id" name="img_desk" />
     <item type="id" name="preview_area" />
     <item type="id" name="preview_box" />
+    <item type="id" name="preview_frame_dash" />
     <item type="id" name="tv_preview_empty" />
     <item type="id" name="img_preview" />
     <item type="id" name="pb_preview" />

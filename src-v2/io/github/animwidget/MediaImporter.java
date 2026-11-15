@@ -130,7 +130,7 @@ public final class MediaImporter {
     }
 
     /**
-     * v1.10.26（需求 4）：fpsX10 &gt; 0 时用调用方给的确切帧率（337 = 33.7fps）。
+     * v1.10.26：fpsX10 &gt; 0 时用调用方给的确切帧率（337 = 33.7fps）。
      * 原来一律 config.getFps()*10 —— 33.7fps 的素材会被导出成 34.0fps（快 0.9%）。
      */
     @Nullable
@@ -451,7 +451,11 @@ public final class MediaImporter {
             Diag.warn(context, "W52", "导出总量超 250MB 软预算: "
                     + (totalBytes.get() / (1024L * 1024L)) + "MB 帧=" + written.get() + "/" + outCount);
         }
-        Diag.warn(context, "P02", "动图导出 " + written.get() + " 帧, " + FrameUtil.fpsX10Text(outFps) + ", 源=" + anim);
+        // v1.10.536：**P02 只能在"真的导完了"时出现。**
+        // 原来它无条件先打一行"动图导出 N 帧"，然后才判断有没有中断 ——
+        // 于是解码中断（W53）、以及 written=0 退回静态首帧（P11）这两种失败，
+        // 日志里都会先冒出 P02，读日志的人按 P02 过滤就会把它当成"这次导出成功了"。
+        // 现在挪到两条失败判定之后：P02 与 W53 / P11 天然互斥。
         Throwable dead = jobError.get();
         if (dead == null && failure[0] != null) {
             dead = failure[0];
@@ -485,6 +489,7 @@ public final class MediaImporter {
             Diag.warn(context, "P11", "动图导出失败，退回静态首帧");
             return new Result(compact(context, frameId), width, height, 1);
         }
+        Diag.warn(context, "P02", "动图导出 " + written.get() + " 帧, " + FrameUtil.fpsX10Text(outFps) + ", 源=" + anim);
         return new Result(compact(context, frameId), size[0], size[1], outFps);
     }
 

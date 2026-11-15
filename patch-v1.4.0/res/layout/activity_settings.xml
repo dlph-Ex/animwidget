@@ -50,7 +50,7 @@
                     <io.github.animwidget.LanguageRowView android:id="@id/rb_dark" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" />
                 </LinearLayout>
             </LinearLayout>
-            <!-- v1.10.98（需求 4）：字体卡 —— 折叠动画与上面「界面语言」「系统模式」完全同一套 -->
+            <!-- v1.10.98：字体卡 —— 折叠动画与上面「界面语言」「系统模式」完全同一套 -->
             <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:padding="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
                 <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/row_font_header" android:padding="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:clickable="true">
                     <TextView android:textSize="14.0sp" android:textStyle="bold" android:gravity="center" android:tag="icon_tile" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="Aa" />
@@ -76,7 +76,8 @@
             </LinearLayout>
             <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:paddingTop="10.0dip" android:paddingBottom="12.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
                 <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/row_palette_header" android:paddingTop="6.0dip" android:paddingBottom="6.0dip" android:paddingStart="16.0dip" android:paddingEnd="16.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:clickable="true">
-                    <TextView android:textSize="17.0sp" android:gravity="center" android:tag="icon_tile_2" android:layout_width="40.0dip" android:layout_height="40.0dip" android:text="🎨" />
+                    <!-- v1.10.522：配色方案卡片图标改自绘（调色板），不再用 🎨 字符 -->
+                    <io.github.animwidget.IconTileView android:tag="icon_tile_2|palette" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_presets" />
                     <TextView android:textSize="15.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_presets" android:layout_weight="1.0" android:layout_marginStart="12.0dip" />
                     <io.github.animwidget.GlyphView android:id="@+id/btn_palette_toggle" android:layout_width="40.0dip" android:layout_height="40.0dip" android:contentDescription="@string/settings_presets" />
                 </LinearLayout>
@@ -125,19 +126,18 @@
             <LinearLayout android:orientation="vertical" android:tag="card" android:background="@drawable/card_surface" android:paddingTop="6.0dip" android:paddingBottom="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="12.0dip">
                 <TextView android:textSize="14.0sp" android:paddingTop="8.0dip" android:paddingBottom="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_colors" android:paddingStart="14.0dip" android:paddingEnd="14.0dip" />
                 <LinearLayout android:orientation="vertical" android:id="@id/ll_colors" android:layout_width="fill_parent" android:layout_height="wrap_content" />
-                <View android:tag="divider" android:layout_width="fill_parent" android:layout_height="1.0dip" android:layout_marginStart="14.0dip" android:layout_marginEnd="14.0dip" />
-                <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/row_shape_system" android:paddingTop="7.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="14.0dip" android:paddingEnd="14.0dip">
-                    <CheckBox android:gravity="center_vertical" android:id="@id/cb_shape_system" android:layout_width="40.0dip" android:layout_height="40.0dip" />
-                    <TextView android:textSize="14.0sp" android:layout_width="0.0dip" android:layout_height="wrap_content" android:text="@string/settings_shape_follow" android:layout_weight="1.0" android:layout_marginStart="8.0dip" />
-                </LinearLayout>
-                <TextView android:textSize="11.0sp" android:tag="muted" android:paddingBottom="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="@string/settings_shape_hint" android:paddingStart="62.0dip" android:paddingEnd="14.0dip" />
+                <!-- v1.10.522：形状图形的颜色恒跟随系统，这一块没有可调项。
+                     颜色跟随系统成为唯一口径（默认即跟随），见 ConfigActivity#buildShapeGrid
+                     与 LayoutPickerView 的 systemControlColor()。 -->
             </LinearLayout>
             <Button android:textSize="13.0sp" android:id="@id/btn_logs_entry" android:tag="pill_soft" android:background="@drawable/pill_soft" android:layout_width="fill_parent" android:layout_height="46.0dip" android:layout_marginTop="16.0dip" android:text="@string/settings_logs" android:textAllCaps="false" />
             <Button android:textSize="14.0sp" android:id="@id/btn_reset_theme" android:tag="danger" android:background="@drawable/pill_primary" android:layout_width="fill_parent" android:layout_height="50.0dip" android:layout_marginTop="16.0dip" android:layout_marginBottom="6.0dip" android:text="@string/settings_reset" android:textAllCaps="false" />
             <View android:id="@+id/spacer_bottom" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="104.0dip" />
         </LinearLayout>
     </ScrollView>
-    <TextView android:textSize="13.0sp" android:gravity="center" android:layout_gravity="start|center|top" android:id="@id/btn_settings_close" android:tag="close_pill" android:background="@drawable/pill_soft" android:focusable="true" android:clickable="true" android:layout_width="wrap_content" android:layout_height="38.0dip" android:layout_marginTop="8.0dip" android:text="@string/settings_close" android:contentDescription="@string/settings_close" android:paddingStart="18.0dip" android:paddingEnd="18.0dip" android:layout_marginStart="16.0dip" android:elevation="4.0dip" />
+    <!-- v1.10.523（需求）：左上角「关闭」文字胶囊 → **自绘返回按钮**（BackButton）：
+         视觉 40dp 圆底 + 箭头、触摸目标 48dp，按下缩放/左移/state layer 三段动效。 -->
+    <io.github.animwidget.BackButton android:layout_gravity="start|center|top" android:id="@id/btn_settings_close" android:focusable="true" android:clickable="true" android:layout_width="48.0dip" android:layout_height="48.0dip" android:layout_marginTop="4.0dip" android:layout_marginStart="12.0dip" android:contentDescription="@string/settings_close" />
     <LinearLayout android:orientation="vertical" android:layout_gravity="bottom" android:id="@+id/scheme_action_bar" android:visibility="gone" android:background="@drawable/card_surface" android:elevation="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="12.0dip" android:paddingEnd="12.0dip" android:paddingTop="12.0dip" android:paddingBottom="10.0dip" android:layout_marginStart="12.0dip" android:layout_marginEnd="12.0dip" android:layout_marginBottom="14.0dip">
         <!-- v1.10.372（需求）：胶囊按钮区 = **两页连续滚动**（不是分页控件）。
              第 1 页：删除 / 更新(确认) / 取消 —— 缺哪个就少哪个，剩下的按权重铺满，不留空缺；

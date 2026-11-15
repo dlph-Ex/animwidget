@@ -59,3 +59,6 @@ patch-v1.4.0/res/font/anim_dual.xml
 patch-v1.4.0/res/font/anim_dual_r.ttf
 patch-v1.4.0/res/font/anim_dual_sb.ttf
 app/src/main/res/drawable-nodpi/reward_qr.png
+
+# 本地工具链符号链接（指向沙箱外的预编译 jar）
+/toolchain

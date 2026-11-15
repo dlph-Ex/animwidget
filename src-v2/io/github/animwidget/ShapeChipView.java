@@ -114,10 +114,10 @@ public final class ShapeChipView extends View {
         float radius = 12.0f * density;
         this.bgPaint.setColor(this.bgColor);
         canvas.drawRoundRect(0.0f, 0.0f, w, h, radius, radius, this.bgPaint);
-        if (this.chosen) {
-            this.bgPaint.setColor((this.accentColor & 16777215) | 570425344);
-            canvas.drawRoundRect(0.0f, 0.0f, w, h, radius, radius, this.bgPaint);
-        }
+        // v1.10.525：选中框改回描边样式，并补点到点移动动画。
+        // 选中态（13% 强调底 + 3dp 描边）不再由每个格子自己画 —— 改由浮在上面的
+        // ShapeSelectFrame 统一画，这样切换时框能"从一个格子滑到另一个格子"。
+        // 这个类里保留 chosen 字段与 setter（调用方语义不变），只是不再绘制。
         // v1.10.212：**回滚**v1.10.211 的「图形占满整格」。
         // 那一版把图形按整格宽高画（只留 5dp 内边距），格子从「深色圆角卡片里放一个图形」
         // 变成了「一整块浅色方块」，一眼分不清是格子还是图形（RECT / 超椭圆 / 圆形 三格几乎一样）。
@@ -129,11 +129,5 @@ public final class ShapeChipView extends View {
         this.fillPaint.setColor(this.shapeColor);
         canvas.drawPath(path, this.fillPaint);
         canvas.restore();
-        if (this.chosen) {
-            this.strokePaint.setStyle(Paint.Style.STROKE);
-            this.strokePaint.setStrokeWidth(3.0f * density);
-            this.strokePaint.setColor(this.accentColor);
-            canvas.drawRoundRect(0.0f, 0.0f, w, h, radius, radius, this.strokePaint);
-        }
     }
 }

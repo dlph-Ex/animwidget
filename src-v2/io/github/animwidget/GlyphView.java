@@ -57,6 +57,14 @@ public final class GlyphView extends View {
      * 用它而不是再写一个四字标题：主标题「配色方案」也是四个字，两个同字数标题会互相抢。
      */
     public static final int SWATCHES = 7;
+    /**
+     * v1.10.522：「系统预设」小标题前的新符号 —— **三段色环**（一张色轮被切成三档）。
+     *
+     * <p>上一版是三个并排的小圆点（{@link #SWATCHES}）：在 14dp 里只读得出「三个点」，
+     * 和标题「系统预设」的关系全靠猜。改成三段弧之后，它一眼是「一组颜色」，
+     * 又不会和卡片图标（调色板）撞图形 —— 卡片讲「配色在哪」，小标题讲「这里是一套套的」。</p>
+     */
+    public static final int WHEEL = 8;
 
     private final Paint pen = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
@@ -83,7 +91,8 @@ public final class GlyphView extends View {
 
     public void setGlyph(int value) {
         this.glyph = value;
-        this.glyphDp = value == CHECK ? 12.5f
+        this.glyphDp = value == WHEEL ? 12.0f
+                : value == CHECK ? 12.5f
                 : (value == ALERT ? 14.0f
                 : (value == CUP ? 26.0f
                 : (value == RESET ? 15.0f
@@ -121,7 +130,8 @@ public final class GlyphView extends View {
         this.pen.setStyle(Paint.Style.STROKE);
         this.pen.setStrokeCap(Paint.Cap.ROUND);
         this.pen.setStrokeJoin(Paint.Join.ROUND);
-        this.pen.setStrokeWidth((this.glyph == CHECK ? 1.9f
+        this.pen.setStrokeWidth((this.glyph == WHEEL ? 1.55f
+                : this.glyph == CHECK ? 1.9f
                 : (this.glyph == CUP ? 1.70f
                 : (this.glyph == REFRESH ? 1.75f
                 : (this.glyph == RESET ? 1.90f : 1.45f)))) * dp);
@@ -165,6 +175,18 @@ public final class GlyphView extends View {
             this.pen.setStyle(Paint.Style.STROKE);
             if (keepStyle == 0) {
                 this.pen.setStyle(Paint.Style.FILL);
+            }
+            return;
+        }
+        if (this.glyph == WHEEL) {
+            // 三段等分弧（每段 104°、留 16° 缺口）：圆心 + 半径由 glyphDp 决定，
+            // 圆头端点让缺口看起来是"切出来的缝"，不是"断掉的线"。
+            float r = g * 0.40f;
+            float sw = this.pen.getStrokeWidth();
+            float rr = Math.max(1.0f, r - sw * 0.5f);
+            android.graphics.RectF ring = new android.graphics.RectF(cx - rr, cy - rr, cx + rr, cy + rr);
+            for (int i = 0; i < 3; i++) {
+                canvas.drawArc(ring, -90.0f + i * 120.0f + 8.0f, 104.0f, false, this.pen);
             }
             return;
         }

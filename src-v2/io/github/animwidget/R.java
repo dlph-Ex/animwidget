@@ -71,7 +71,7 @@ public final class R {
         public static final int tv_anim_pick_status = 0x7f080081;
         public static final int btn_anim_pick_back = 0x7f080082;
         public static final int tv_anim_pick_title = 0x7f080083;
-        public static final int tv_anim_pick_sub = 0x7f0800ec;
+        public static final int tv_anim_pick_sub = 0x7f0800ed;
         public static final int btn_export_txt_open = 0x7f080084;
         public static final int btn_log_history = 0x7f080085;
         public static final int btn_export_history_back = 0x7f080086;
@@ -209,14 +209,14 @@ public final class R {
         public static final int tv_scale = 0x7f08002a;
         public static final int tv_shadow = 0x7f080028;
         public static final int widget_image = 0x7f080070;
-        public static final int tv_perf_headroom = 0x7f0800f2;
+        public static final int tv_perf_headroom = 0x7f0800f3;
         // v1.10.490：多格组件（一个 host 里 6 个 ImageView）
-        public static final int widget_cell0 = 0x7f0800f8;
-        public static final int widget_cell1 = 0x7f0800f9;
-        public static final int widget_cell2 = 0x7f0800fa;
-        public static final int widget_cell3 = 0x7f0800fb;
-        public static final int widget_cell4 = 0x7f0800fc;
-        public static final int widget_cell5 = 0x7f0800fd;
+        public static final int widget_cell0 = 0x7f0800f9;
+        public static final int widget_cell1 = 0x7f0800fa;
+        public static final int widget_cell2 = 0x7f0800fb;
+        public static final int widget_cell3 = 0x7f0800fc;
+        public static final int widget_cell4 = 0x7f0800fd;
+        public static final int widget_cell5 = 0x7f0800fe;
         public static final int btn_mode_toggle = 0x7f08008a;
         public static final int btn_scheme_cancel = 0x7f08008b;
         public static final int btn_scheme_confirm = 0x7f08008c;
@@ -266,39 +266,40 @@ public final class R {
         public static final int flip_4 = 0x7f0800bb;
         public static final int flip_5 = 0x7f0800bc;
         public static final int cb_hires = 0x7f0800d9;
-        public static final int row_hires = 0x7f0800e3;
-        public static final int tv_hires_hint = 0x7f0800f1;
+        public static final int row_hires = 0x7f0800e4;
+        public static final int tv_hires_hint = 0x7f0800f2;
         public static final int aq0 = 0x7f0800d4;
         public static final int aq1 = 0x7f0800d5;
         public static final int aq2 = 0x7f0800d6;
-        public static final int row_anim = 0x7f0800e2;
-        public static final int tv_anim_hint = 0x7f0800eb;
+        public static final int row_anim = 0x7f0800e3;
+        public static final int tv_anim_hint = 0x7f0800ec;
         public static final int dev_btn_about = 0x7f0800da;
         public static final int dev_pill_divider = 0x7f0800db;
         public static final int dev_pill_stack = 0x7f0800dc;
         public static final int btn_scheme_move_next = 0x7f0800d7;
         public static final int btn_scheme_move_prev = 0x7f0800d8;
-        public static final int scheme_bar_indicator = 0x7f0800e4;
-        public static final int scheme_bar_row = 0x7f0800e7;
-        public static final int scheme_bar_scroll = 0x7f0800e8;
-        public static final int scheme_bar_track = 0x7f0800e9;
-        public static final int scheme_bar_page1 = 0x7f0800e5;
-        public static final int scheme_bar_page2 = 0x7f0800e6;
+        public static final int scheme_bar_indicator = 0x7f0800e5;
+        public static final int scheme_bar_row = 0x7f0800e8;
+        public static final int scheme_bar_scroll = 0x7f0800e9;
+        public static final int scheme_bar_track = 0x7f0800ea;
+        public static final int scheme_bar_page1 = 0x7f0800e6;
+        public static final int scheme_bar_page2 = 0x7f0800e7;
         public static final int glyph_presets = 0x7f0800dd;
         public static final int presets_scroll = 0x7f0800e1;
         public static final int ll_env = 0x7f0800de;
-        public static final int tv_battery_state = 0x7f0800ed;
-        public static final int tv_hero_num = 0x7f0800ef;
-        public static final int tv_shizuku_state = 0x7f0800f6;
-        public static final int tv_usage_state = 0x7f0800f7;
-        public static final int tv_hero_frames = 0x7f0800ee;
-        public static final int tv_hero_play = 0x7f0800f0;
-        public static final int scroll_main = 0x7f0800ea;
+        public static final int tv_battery_state = 0x7f0800ee;
+        public static final int tv_hero_num = 0x7f0800f0;
+        public static final int tv_shizuku_state = 0x7f0800f7;
+        public static final int tv_usage_state = 0x7f0800f8;
+        public static final int tv_hero_frames = 0x7f0800ef;
+        public static final int tv_hero_play = 0x7f0800f1;
+        public static final int scroll_main = 0x7f0800eb;
         public static final int ll_perf_headroom = 0x7f0800df;
         public static final int perf_meter = 0x7f0800e0;
-        public static final int tv_perf_lanes = 0x7f0800f3;
-        public static final int tv_perf_pct = 0x7f0800f4;
-        public static final int tv_perf_used = 0x7f0800f5;
+        public static final int tv_perf_lanes = 0x7f0800f4;
+        public static final int tv_perf_pct = 0x7f0800f5;
+        public static final int tv_perf_used = 0x7f0800f6;
+        public static final int preview_frame_dash = 0x7f0800e2;
     }
 
     /* loaded from: classes.jar:io/github/animwidget/R$layout.class */
@@ -876,6 +877,12 @@ public final class R {
         public static final int integrity_hint = 0x7f0601dd;
         public static final int integrity_unofficial = 0x7f0601de;
         public static final int about_cert_copied = 0x7f0601ad;
+        public static final int settings_anim_quality_hint_0 = 0x7f060229;
+        public static final int settings_anim_quality_hint_1 = 0x7f06022a;
+        public static final int settings_anim_quality_hint_2 = 0x7f06022b;
+        public static final int cfg_anim_quality_hint_0 = 0x7f060226;
+        public static final int cfg_anim_quality_hint_1 = 0x7f060227;
+        public static final int cfg_anim_quality_hint_2 = 0x7f060228;
     }
 
     /* loaded from: classes.jar:io/github/animwidget/R$style.class */

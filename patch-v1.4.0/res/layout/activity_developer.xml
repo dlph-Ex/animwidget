@@ -51,7 +51,7 @@
 
             <!-- 技术底座 -->
             <LinearLayout android:orientation="vertical" android:tag="card"
-                android:paddingTop="10dp" android:paddingBottom="10dp"
+                android:paddingTop="14dp" android:paddingBottom="14dp"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="14dp">
                 <TextView android:textSize="14sp" android:textStyle="bold" android:tag="section"
@@ -64,8 +64,9 @@
             </LinearLayout>
 
             <!-- 调试与记录 -->
+            <!-- v1.10.523：上下内边距 10/12 → 14/16dp -->
             <LinearLayout android:orientation="vertical" android:tag="card"
-                android:paddingTop="10dp" android:paddingBottom="12dp"
+                android:paddingTop="14dp" android:paddingBottom="16dp"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="14dp">
                 <TextView android:textSize="14sp" android:textStyle="bold" android:tag="section"
@@ -76,18 +77,21 @@
                 <LinearLayout android:orientation="vertical"
                     android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:paddingStart="14dp" android:paddingEnd="14dp">
-                    <Button android:id="@+id/dev_btn_logs" android:textSize="14sp" android:tag="pill_soft"
+                    <!-- v1.10.522：「调试」「记录」按钮改成**分组圆角**（外侧 18dp /
+                         相邻内侧 8dp），间距从 8dp 收到 2dp —— 三格拼成一个容器，
+                         而不是三枚各走各路的胶囊。 -->
+                    <Button android:id="@+id/dev_btn_logs" android:textSize="14sp" android:tag="group_pill_first"
                         android:background="@drawable/pill_soft" android:textAllCaps="false"
                         android:layout_width="match_parent" android:layout_height="48dp"
                         android:layout_marginTop="6dp" android:text="@string/dev_open_logs" />
-                    <Button android:id="@+id/dev_btn_intro" android:textSize="14sp" android:tag="pill_soft"
+                    <Button android:id="@+id/dev_btn_intro" android:textSize="14sp" android:tag="group_pill_middle"
                         android:background="@drawable/pill_soft" android:textAllCaps="false"
                         android:layout_width="match_parent" android:layout_height="48dp"
-                        android:layout_marginTop="8dp" android:text="@string/dev_replay_intro" />
-                    <Button android:id="@+id/dev_btn_reward" android:textSize="14sp" android:tag="pill_soft"
+                        android:layout_marginTop="2dp" android:text="@string/dev_replay_intro" />
+                    <Button android:id="@+id/dev_btn_reward" android:textSize="14sp" android:tag="group_pill_last"
                         android:background="@drawable/pill_soft" android:textAllCaps="false"
                         android:layout_width="match_parent" android:layout_height="48dp"
-                        android:layout_marginTop="8dp" android:text="@string/settings_reward" />
+                        android:layout_marginTop="2dp" android:text="@string/settings_reward" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -97,7 +101,7 @@
                  上一版把胶囊塞进 QQ 那一行（horizontal + center_vertical），
                  两格 81dp 比那一行高得多，整行被撑高、胶囊被垂直居中 → 跑到了卡片正中间。 -->
             <FrameLayout android:tag="card" android:clipChildren="false"
-                android:paddingTop="10dp" android:paddingBottom="10dp"
+                android:paddingTop="14dp" android:paddingBottom="14dp"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="14dp">
 

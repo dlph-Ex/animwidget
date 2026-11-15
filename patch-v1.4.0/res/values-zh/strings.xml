@@ -75,7 +75,7 @@
     <string name="dev_copy_qq">复制 QQ</string>
     <string name="dev_close">关闭</string>
     <string name="dev_copied">已复制 QQ：%1$s</string>
-    <string name="settings_title">外观设置</string>
+    <string name="settings_title">设置</string>
     <string name="open_settings">设置</string>
     <string name="cfg_preview">效果预览</string>
     <string name="cfg_not_picked">尚未选择素材</string>
@@ -123,6 +123,9 @@
     <string name="cfg_hires_hint">只对静态图片有效。开=这个组件按桌面给的卡片真实像素烘一次、以文件交给桌面，桌面按原像素画；关=图跟着组件更新一起塞过去（Binder 1MB 上限），桌面会放大 2~3 倍</string>
     <string name="cfg_anim_quality">动图分辨率（只影响这个组件）</string>
     <string name="cfg_anim_quality_hint">只作用于当前组件。标准=22 万 px，走位图通道（最稳）；高清=长边 1440 / 130 万 px，仍与格子无关，文件推送；1:1=按卡片真实像素、最大 220 万 px，文件推送（拖动尺寸会重烘整批帧）。越清楚每帧越吃 CPU</string>
+    <string name="cfg_anim_quality_hint_0">标准：约 22 万像素，走位图通道，最稳、每帧最省 CPU</string>
+    <string name="cfg_anim_quality_hint_1">高清：长边 ≤1440、总面积 ≤130 万像素，与格子大小无关，按文件推送</string>
+    <string name="cfg_anim_quality_hint_2">1:1：按卡片在桌面上的真实像素渲染，最大 220 万像素；拖动尺寸要把整批帧重做</string>
     <string name="cfg_aq0">标准</string>
     <string name="cfg_aq1">高清</string>
     <string name="cfg_aq2">1:1</string>
@@ -505,6 +508,9 @@
     <string name="settings_hires_static_hint">只是「以后新建的组件」的默认值，每个组件都能在自己的编辑页里单独改。开：静态图片按桌面上的真实大小准备，桌面不再放大</string>
     <string name="settings_anim_quality">动图分辨率（新组件默认）</string>
     <string name="settings_anim_quality_hint">只是「以后新建的组件」的默认值，每个组件都能在编辑页里单独改。越清楚越吃性能：标准最稳 → 高清 → 1:1 最清楚（拖大小要把全部帧重做）</string>
+    <string name="settings_anim_quality_hint_0">标准：约 22 万像素，走位图通道（最稳）</string>
+    <string name="settings_anim_quality_hint_1">高清：长边 ≤1440、总面积 ≤130 万像素，按文件推送</string>
+    <string name="settings_anim_quality_hint_2">1:1：按卡片在桌面上的真实像素渲染（≤220 万像素），改尺寸要整批重烘</string>
     <string name="settings_anim_quality_0">0 · 标准（22 万 px）</string>
     <string name="settings_anim_quality_1">1 · 高清（130 万 px）</string>
     <string name="settings_anim_quality_2">2 · 1:1（220 万 px）</string>
