@@ -65,14 +65,13 @@
 **v1.10.538**
 
 - 预览虚线框改由独立图层自绘：换布局时按 `cubic-bezier(0.22, 1, 0.36, 1)` 在 300–450ms 内平滑形变，连续快切从当前位置续走，不闪、不重置、不断档。
-- 虚线框只跟随布局：素材比例、画面位移、画面缩放、旋转、阴影都不再改变框的位置与大小；画面始终在框内。
-- 固定比例（16:9 / 4:3 / 1:1 / 9:16 / 21:9）下「适配画面」可切换：开＝完整显示不裁切；关＝裁切填满，画面贴满框、四周间距 1dp。
+- 虚线框的目标矩形只由布局比例与预览区尺寸决定：素材比例、画面位移、画面缩放、旋转、阴影都不改变框的位置与大小；画面始终在框内。
 - 形状蒙版改为三行一列、横向滑动，不再有「展开 / 收起」两态。
 - 分组圆角统一为外侧 18dp、相邻内侧 8dp（性能卡 14/6，按钮组间距 2dp）；布局卡片、开发者页按钮分行同规则。
 - 比例卡配色重做：选中为主色混白，未选中为系统控件色，箭头墨色随底色明暗切换。
 - 设置页新增返回按钮：40dp 圆底、48dp 热区，按下缩小并叠 18% 状态层，松手回弹。
 - 设置页底部补位改为高度过渡（240ms），开关折叠时不再硬跳。
-- 编辑页「动图分辨率」只显示当前档位的说明，改档即时刷新。
+- 编辑页「动图分辨率」只显示当前档位的说明，改档即时刷新；开发者页三张卡片加高；内容与蒙版旋转共用自绘滑条（AngleSlider），按下不再跳值、拖动跟手。
 - 日志新增「预览形变」记录（判断代号 W54）：换布局时一行给出旧→新的框尺寸与时长，用于核对形变是否按预期发生。
 
 ### 安装
@@ -219,14 +218,13 @@ Release certificate SHA-256 — check it in the app under "About → Signing cer
 **v1.10.538**
 
 - The preview dashed frame is now drawn by its own overlay layer. Changing the layout morphs it over 300–450ms with `cubic-bezier(0.22, 1, 0.36, 1)`; rapid switches continue from the current rectangle instead of restarting.
-- The frame follows the layout only: media aspect, content offset, content zoom, rotation and shadow no longer move or resize it, and the picture always stays inside.
-- For fixed ratios (16:9 / 4:3 / 1:1 / 9:16 / 21:9) the "fit content" switch works both ways: on keeps the whole picture visible, off crops to fill — the picture then fills the frame with a 1dp gap on all four sides.
+- The frame's target rectangle depends only on the layout ratio and the size of the preview area: media aspect, content offset, content zoom, rotation and shadow do not move or resize it, and the picture always stays inside.
 - Shape masks are now three rows that scroll sideways, replacing the old expand/collapse state.
 - Grouped corner radii are unified: 18dp on the outer edge, 8dp between adjacent rows (14/6 on the performance card, 2dp spacing inside button groups).
 - Ratio cards use new colours: primary tinted with white when selected, the system control colour otherwise, with ink that flips with the background.
 - The settings page gains a back button: 40dp circle in a 48dp touch target, 90% press scale with an 18% state layer, springing back on release.
 - The settings page bottom spacer animates its height (240ms) instead of jumping when a group collapses.
-- The animation-resolution row in the editor shows only the hint for the selected tier and refreshes on change.
+- The animation-resolution row in the editor shows only the hint for the selected tier and refreshes on change; the three cards on the developer page are taller; content and mask rotation share a custom slider (AngleSlider) that no longer jumps when pressed.
 - New log entry "preview morph" (code W54): one line per layout change with the old and new frame sizes and the duration.
 
 ### Install
